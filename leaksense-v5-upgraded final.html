@@ -1,0 +1,3013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LeakSense AI — Smart Water Leak Detection v5</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0B0F1A;--bg2:#0F172A;--bg3:#111827;
+  --neon:#7C3AED;--cyan:#14B8A6;--green:#22C55E;--red:#EF4444;--amber:#F59E0B;
+  --text:#E5E7EB;--text2:#9CA3AF;--dim:#6B7280;
+  --border:rgba(124,58,237,0.2);--glow:rgba(124,58,237,0.5);
+  --card:rgba(17,24,39,0.9);--card2:rgba(15,23,42,0.9);
+  --sidebar-w:240px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.3);border-radius:3px;}
+
+/* ── GLOBAL BG ── */
+.global-bg{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 70% at 20% 20%,rgba(100,40,200,0.08),transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 80%,rgba(60,20,140,0.07),transparent 60%),
+    repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(124,58,237,0.018) 60px,rgba(124,58,237,0.018) 61px),
+    repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(124,58,237,0.018) 60px,rgba(124,58,237,0.018) 61px);
+}
+
+/* ── PARTICLES ── */
+.particle{position:fixed;border-radius:50%;pointer-events:none;background:var(--neon);opacity:0;animation:floatP linear infinite;}
+@keyframes floatP{0%{transform:translateY(100vh) translateX(0);opacity:0;}10%{opacity:0.5;}90%{opacity:0.15;}100%{transform:translateY(-120px) translateX(40px);opacity:0;}}
+
+/* ── PAGE SYSTEM ── */
+.page{display:none;animation:fadeIn .4s ease;}
+.page.active{display:block;}
+.page.flex-page{display:none;align-items:center;justify-content:center;min-height:100vh;}
+.page.flex-page.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* ═══════════════════════════════════════════
+   LANDING PAGE
+═══════════════════════════════════════════ */
+#page-landing{position:relative;z-index:1;}
+
+/* NAV */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 48px;height:70px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(2,11,20,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;color:var(--neon);display:flex;align-items:center;gap:10px;cursor:pointer;}
+.nav-logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#2D1575,rgba(124,58,237,0.15));border:1px solid var(--neon);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(124,58,237,0.25);}
+.nav-links{display:flex;align-items:center;gap:32px;}
+.nav-links a{color:var(--text2);font-size:15px;font-weight:500;text-decoration:none;letter-spacing:.5px;transition:color .2s;cursor:pointer;}
+.nav-links a:hover{color:var(--neon);}
+.nav-btn{padding:9px 24px;background:linear-gradient(135deg,#3B1D8A,rgba(124,58,237,0.2));border:1px solid var(--neon);border-radius:7px;color:var(--neon);font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .3s;box-shadow:0 0 18px rgba(124,58,237,0.2);}
+.nav-btn:hover{box-shadow:0 0 35px rgba(124,58,237,0.5);transform:translateY(-1px);}
+
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:100px 48px 60px;text-align:center;position:relative;
+}
+.hero-content{max-width:800px;position:relative;z-index:1;}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 18px;margin-bottom:28px;
+  background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);
+  border-radius:20px;font-size:13px;color:var(--neon);letter-spacing:1px;
+  font-family:'Share Tech Mono',monospace;
+}
+.hero-badge-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.hero h1{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(36px,6vw,72px);font-weight:900;
+  line-height:1.1;margin-bottom:24px;
+  text-shadow:0 0 60px rgba(124,58,237,0.2);
+}
+.hero h1 .grad{background:linear-gradient(90deg,var(--neon),var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{font-size:18px;color:var(--text2);line-height:1.7;max-width:580px;margin:0 auto 44px;}
+.hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{
+  padding:15px 40px;
+  background:linear-gradient(135deg,#3B1D8A,rgba(124,58,237,0.25));
+  border:1px solid var(--neon);border-radius:10px;
+  color:var(--neon);font-family:'Orbitron',monospace;
+  font-size:13px;font-weight:700;letter-spacing:2px;
+  cursor:pointer;transition:all .3s;
+  box-shadow:0 0 30px rgba(124,58,237,0.25);
+  position:relative;overflow:hidden;
+}
+.btn-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(124,58,237,0.15),transparent);transform:translateX(-100%);transition:transform .5s;}
+.btn-primary:hover::before{transform:translateX(100%);}
+.btn-primary:hover{box-shadow:0 0 50px rgba(124,58,237,0.5);transform:translateY(-2px);}
+.btn-secondary{
+  padding:15px 40px;
+  background:transparent;border:1px solid var(--border);border-radius:10px;
+  color:var(--text2);font-family:'Rajdhani',sans-serif;
+  font-size:15px;font-weight:600;letter-spacing:1px;
+  cursor:pointer;transition:all .25s;
+}
+.btn-secondary:hover{border-color:rgba(124,58,237,0.4);color:var(--neon);}
+
+/* STATS BAR */
+.stats-bar{
+  display:flex;justify-content:center;gap:60px;
+  padding:36px 48px;
+  background:rgba(15,10,35,0.6);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  flex-wrap:wrap;row-gap:24px;
+}
+.stat-item{text-align:center;}
+.stat-val{font-family:'Orbitron',monospace;font-size:32px;font-weight:700;color:var(--neon);display:block;text-shadow:0 0 20px rgba(124,58,237,0.4);}
+.stat-lbl{font-size:12px;color:var(--dim);letter-spacing:1.5px;margin-top:4px;text-transform:uppercase;}
+
+/* FEATURES */
+.features{padding:80px 48px;max-width:1200px;margin:0 auto;}
+.section-header{text-align:center;margin-bottom:56px;}
+.section-label{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--neon);letter-spacing:3px;margin-bottom:12px;display:block;}
+.section-title{font-family:'Orbitron',monospace;font-size:36px;font-weight:700;margin-bottom:14px;}
+.section-sub{color:var(--text2);font-size:16px;max-width:500px;margin:0 auto;}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;}
+.feat-card{
+  padding:32px;
+  background:var(--card);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:16px;
+  transition:all .3s;position:relative;overflow:hidden;
+}
+.feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon),transparent);opacity:0;transition:opacity .3s;}
+.feat-card:hover{transform:translateY(-4px);border-color:rgba(124,58,237,0.35);box-shadow:0 20px 60px rgba(0,0,0,0.4),0 0 30px rgba(124,58,237,0.08);}
+.feat-card:hover::before{opacity:1;}
+.feat-icon{font-size:36px;margin-bottom:16px;}
+.feat-title{font-family:'Orbitron',monospace;font-size:15px;font-weight:600;margin-bottom:10px;color:var(--neon);}
+.feat-desc{color:var(--text2);font-size:14px;line-height:1.7;}
+
+/* HOW IT WORKS */
+.how-section{padding:80px 48px;background:rgba(4,15,28,0.5);}
+.how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;max-width:900px;margin:0 auto;}
+.how-step{text-align:center;padding:32px 24px;position:relative;}
+.how-step:not(:last-child)::after{
+  content:'→';position:absolute;right:-10px;top:50%;transform:translateY(-50%);
+  color:var(--dim);font-size:20px;
+}
+.how-num{
+  width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(0,100,200,0.1));
+  border:1px solid var(--neon);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',monospace;font-size:20px;font-weight:700;color:var(--neon);
+  margin:0 auto 16px;box-shadow:0 0 20px rgba(124,58,237,0.2);
+}
+.how-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:600;margin-bottom:8px;}
+.how-desc{color:var(--text2);font-size:13px;line-height:1.6;}
+
+/* CTA SECTION */
+.cta-section{
+  padding:100px 48px;text-align:center;
+  background:linear-gradient(135deg,rgba(20,10,50,0.6),rgba(40,10,80,0.4));
+  border-top:1px solid var(--border);
+}
+.cta-section h2{font-family:'Orbitron',monospace;font-size:36px;font-weight:700;margin-bottom:16px;}
+.cta-section p{color:var(--text2);font-size:16px;margin-bottom:40px;}
+
+/* FOOTER */
+.footer{
+  padding:32px 48px;
+  background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+}
+.footer-logo{font-family:'Orbitron',monospace;font-size:16px;color:var(--neon);}
+.footer-links{display:flex;gap:24px;}
+.footer-links a{color:var(--dim);font-size:13px;text-decoration:none;cursor:pointer;transition:color .2s;}
+.footer-links a:hover{color:var(--neon);}
+.footer-note{color:var(--dim);font-size:12px;}
+
+/* ═══════════════════════════════════════════
+   AUTH PAGES (Login / Signup)
+═══════════════════════════════════════════ */
+.auth-wrapper{
+  display:grid;grid-template-columns:1fr 1fr;
+  width:100%;max-width:1000px;
+  min-height:600px;
+  position:relative;z-index:1;
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 40px 120px rgba(0,0,0,0.7),0 0 80px rgba(124,58,237,0.06);
+  border:1px solid var(--border);
+  margin:24px;
+}
+.auth-left{
+  background:linear-gradient(135deg,rgba(20,10,50,0.95),rgba(40,10,80,0.9));
+  border-right:1px solid var(--border);
+  padding:52px 44px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;overflow:hidden;
+}
+.auth-left::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,0.07),transparent);bottom:-80px;right:-80px;}
+.auth-logo{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;color:var(--neon);display:flex;align-items:center;gap:10px;cursor:pointer;}
+.auth-logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#2D1575,rgba(124,58,237,0.15));border:1px solid var(--neon);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 18px rgba(124,58,237,0.3);}
+.auth-hero h2{font-family:'Orbitron',monospace;font-size:26px;font-weight:700;line-height:1.3;margin-bottom:14px;}
+.auth-hero h2 span{background:linear-gradient(90deg,var(--neon),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.auth-hero p{color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:28px;}
+.auth-stats{display:flex;gap:28px;}
+.auth-stat-val{font-family:'Orbitron',monospace;font-size:22px;font-weight:700;color:var(--neon);display:block;}
+.auth-stat-lbl{font-size:11px;color:var(--dim);letter-spacing:1px;margin-top:2px;}
+.status-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease infinite;}
+
+.auth-right{
+  background:var(--card);backdrop-filter:blur(20px);
+  padding:52px 44px;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.auth-title{font-family:'Orbitron',monospace;font-size:24px;font-weight:700;margin-bottom:6px;}
+.auth-subtitle{color:var(--text2);font-size:14px;margin-bottom:36px;}
+.auth-subtitle a{color:var(--neon);text-decoration:none;cursor:pointer;}
+.auth-subtitle a:hover{text-decoration:underline;}
+.form-group{margin-bottom:18px;}
+.form-label{display:block;font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text2);margin-bottom:7px;text-transform:uppercase;}
+.form-input{width:100%;background:rgba(15,10,35,0.6);border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:15px;outline:none;transition:border-color .25s,box-shadow .25s;}
+.form-input::placeholder{color:var(--dim);}
+.form-input:focus{border-color:var(--neon);box-shadow:0 0 0 3px rgba(124,58,237,0.1);}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.form-forgot{color:var(--neon);font-size:12px;text-decoration:none;cursor:pointer;transition:opacity .2s;}
+.form-forgot:hover{opacity:.7;}
+.form-check{display:flex;align-items:center;gap:9px;margin-bottom:22px;}
+.form-check input[type=checkbox]{width:15px;height:15px;accent-color:var(--neon);cursor:pointer;}
+.form-check label{color:var(--text2);font-size:13px;cursor:pointer;}
+.btn-submit{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,#3B1D8A,rgba(124,58,237,0.2));
+  border:1px solid var(--neon);border-radius:8px;
+  color:var(--neon);font-family:'Orbitron',monospace;
+  font-size:12px;font-weight:700;letter-spacing:2px;
+  cursor:pointer;transition:all .3s;
+  box-shadow:0 0 22px rgba(124,58,237,0.2);
+  position:relative;overflow:hidden;
+}
+.btn-submit::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(124,58,237,0.12),transparent);transform:translateX(-100%);transition:transform .5s;}
+.btn-submit:hover::before{transform:translateX(100%);}
+.btn-submit:hover{box-shadow:0 0 40px rgba(124,58,237,0.45);transform:translateY(-1px);}
+.btn-submit:active{transform:translateY(0);}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--dim);font-size:12px;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.btn-demo-auth{
+  width:100%;padding:12px;background:transparent;border:1px solid var(--border);border-radius:8px;
+  color:var(--text2);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .25s;letter-spacing:1px;
+}
+.btn-demo-auth:hover{border-color:rgba(124,58,237,0.4);color:var(--neon);}
+.error-msg{display:none;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:11px 14px;color:#ff6688;font-size:13px;margin-bottom:14px;}
+.success-msg{display:none;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:11px 14px;color:var(--green);font-size:13px;margin-bottom:14px;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(124,58,237,0.3);border-top-color:var(--neon);border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pw-bars{display:flex;gap:4px;margin-top:8px;margin-bottom:3px;}
+.pw-bar{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.08);transition:background .3s;}
+.pw-bar.weak{background:var(--red);}
+.pw-bar.medium{background:#ffe600;}
+.pw-bar.strong{background:var(--green);}
+.pw-label{font-size:11px;color:var(--dim);letter-spacing:1px;}
+
+/* ═══════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════ */
+#page-dashboard{display:none;min-height:100vh;}
+#page-dashboard.active{display:flex;flex-direction:column;}
+.dashboard-layout{display:flex;flex:1;position:relative;z-index:1;}
+
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar-w);min-height:100vh;
+  background:rgba(2,10,22,0.95);backdrop-filter:blur(20px);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;z-index:50;
+  transition:transform .3s;
+}
+.sidebar-header{
+  padding:20px 20px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.sidebar-logo{font-family:'Orbitron',monospace;font-size:17px;font-weight:700;color:var(--neon);}
+.sidebar-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#2D1575,rgba(124,58,237,0.15));border:1px solid var(--neon);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 14px rgba(124,58,237,0.25);}
+.sidebar-nav{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:4px;}
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;border-radius:9px;
+  color:var(--text2);font-size:14px;font-weight:500;letter-spacing:.5px;
+  cursor:pointer;transition:all .2s;
+  border:1px solid transparent;
+}
+.nav-item:hover{background:rgba(124,58,237,0.06);color:var(--text);border-color:rgba(124,58,237,0.08);}
+.nav-item.active{background:rgba(124,58,237,0.1);color:var(--neon);border-color:rgba(124,58,237,0.2);}
+.nav-item .nav-icon{font-size:17px;width:20px;text-align:center;}
+.nav-sep{height:1px;background:var(--border);margin:10px 0;}
+.sidebar-footer{padding:16px 12px;border-top:1px solid var(--border);}
+.user-card{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 12px;border-radius:9px;
+  background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.08);
+}
+.user-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--neon),var(--cyan));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:#001a2e;
+}
+.user-name{font-size:13px;font-weight:600;color:var(--text);}
+.user-plan{font-size:11px;color:var(--dim);letter-spacing:.5px;}
+
+/* TOPBAR */
+.topbar{
+  position:fixed;top:0;left:var(--sidebar-w);right:0;z-index:40;
+  height:62px;padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(2,10,22,0.9);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.topbar-left{display:flex;align-items:center;gap:16px;}
+.topbar-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:600;color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.topbar-time{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text2);}
+.system-status{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2);}
+.btn-logout{
+  padding:7px 18px;background:transparent;border:1px solid rgba(239,68,68,0.3);
+  border-radius:6px;color:#ff6688;font-size:12px;font-family:'Rajdhani',sans-serif;font-weight:600;
+  cursor:pointer;transition:all .25s;letter-spacing:.5px;
+}
+.btn-logout:hover{border-color:var(--red);background:rgba(239,68,68,0.08);}
+.hamburger{display:none;background:transparent;border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text2);font-size:18px;cursor:pointer;}
+
+/* MAIN CONTENT */
+.main-content{
+  margin-left:var(--sidebar-w);margin-top:62px;
+  flex:1;padding:28px;
+  min-height:calc(100vh - 62px);
+}
+.dash-section{display:none;}
+.dash-section.active{display:block;animation:fadeIn .35s ease;}
+
+/* ALERT BANNER */
+.alert-banner{
+  display:none;
+  padding:14px 20px;border-radius:10px;
+  border:1px solid rgba(255,34,68,0.4);
+  background:rgba(239,68,68,0.08);
+  margin-bottom:24px;
+  display:none;align-items:center;gap:12px;
+  animation:alertPulse 1.5s ease infinite;
+}
+.alert-banner.show{display:flex;}
+@keyframes alertPulse{0%,100%{box-shadow:0 0 0 rgba(255,34,68,0);}50%{box-shadow:0 0 20px rgba(239,68,68,0.3);}}
+.alert-icon{font-size:22px;flex-shrink:0;}
+.alert-text strong{color:var(--red);font-family:'Orbitron',monospace;font-size:13px;display:block;margin-bottom:2px;}
+.alert-text span{color:#ff8899;font-size:13px;}
+.alert-dismiss{margin-left:auto;background:transparent;border:1px solid rgba(239,68,68,0.3);border-radius:5px;padding:4px 10px;color:#ff6688;font-size:12px;cursor:pointer;flex-shrink:0;}
+
+/* KPIS */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.kpi-card{
+  padding:20px;
+  background:var(--card);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:12px;
+  position:relative;overflow:hidden;transition:all .3s;
+}
+.kpi-card:hover{border-color:rgba(124,58,237,0.3);transform:translateY(-2px);}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;}
+.kpi-card.blue::after{background:linear-gradient(90deg,var(--neon),var(--cyan));}
+.kpi-card.green::after{background:linear-gradient(90deg,var(--green),#00cc66);}
+.kpi-card.amber::after{background:linear-gradient(90deg,var(--amber),#ff8c00);}
+.kpi-card.red::after{background:linear-gradient(90deg,var(--red),#ff6644);}
+.kpi-label{font-size:11px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.kpi-value{font-family:'Orbitron',monospace;font-size:28px;font-weight:700;margin-bottom:4px;}
+.kpi-card.blue .kpi-value{color:var(--neon);}
+.kpi-card.green .kpi-value{color:var(--green);}
+.kpi-card.amber .kpi-value{color:var(--amber);}
+.kpi-card.red .kpi-value{color:var(--red);}
+.kpi-change{font-size:12px;color:var(--dim);}
+.kpi-icon{position:absolute;right:16px;top:16px;font-size:24px;opacity:0.4;}
+
+/* CHARTS */
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px;}
+.chart-card{
+  padding:22px;
+  background:var(--card);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:12px;
+}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.chart-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:600;color:var(--text);}
+.chart-badge{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;letter-spacing:1px;}
+.badge-live{background:rgba(0,255,136,0.1);border:1px solid rgba(34,197,94,0.3);color:var(--green);}
+.badge-ai{background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);color:var(--neon);}
+.chart-canvas-wrap{position:relative;height:220px;}
+
+/* CHARTS ROW 2 */
+.charts-row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+
+/* AI PANEL */
+.ai-panel{
+  padding:22px;
+  background:linear-gradient(135deg,rgba(0,15,40,0.9),rgba(0,30,60,0.85));
+  border:1px solid rgba(124,58,237,0.2);border-radius:12px;
+  margin-bottom:24px;
+  position:relative;overflow:hidden;
+}
+.ai-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon),var(--cyan),transparent);}
+.ai-header{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.ai-icon-wrap{
+  width:44px;height:44px;border-radius:10px;
+  background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(0,100,200,0.1));
+  border:1px solid var(--neon);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  box-shadow:0 0 20px rgba(124,58,237,0.2);
+}
+.ai-label{font-family:'Orbitron',monospace;font-size:14px;font-weight:600;color:var(--neon);}
+.ai-sublabel{font-size:12px;color:var(--dim);}
+.ai-risk-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.risk-badge{
+  padding:8px 20px;border-radius:8px;
+  font-family:'Orbitron',monospace;font-size:14px;font-weight:700;letter-spacing:2px;
+}
+.risk-LOW{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.35);color:var(--green);}
+.risk-MEDIUM{background:rgba(245,158,11,0.1);border:1px solid rgba(255,184,0,0.35);color:var(--amber);}
+.risk-HIGH{background:rgba(255,34,68,0.1);border:1px solid rgba(255,34,68,0.4);color:var(--red);animation:alertPulse 1.5s infinite;}
+.ai-message{color:var(--text2);font-size:14px;line-height:1.6;max-width:600px;}
+.ai-indicators{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;}
+.ai-ind{
+  padding:8px 14px;border-radius:7px;font-size:12px;
+  background:rgba(15,10,35,0.6);border:1px solid var(--border);
+  display:flex;align-items:center;gap:7px;
+}
+.ai-ind-dot{width:6px;height:6px;border-radius:50%;}
+
+/* ESP8266 PANEL */
+.esp-panel{
+  padding:20px 22px;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  margin-bottom:24px;
+}
+.esp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.esp-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:600;}
+.esp-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.esp-input{
+  flex:1;min-width:200px;padding:9px 14px;
+  background:rgba(15,10,35,0.6);border:1px solid var(--border);border-radius:7px;
+  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;
+  transition:border-color .2s;
+}
+.esp-input:focus{border-color:var(--neon);}
+.btn-esp{
+  padding:9px 20px;background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(0,100,200,0.1));
+  border:1px solid var(--neon);border-radius:7px;color:var(--neon);
+  font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:1.5px;
+  cursor:pointer;transition:all .25s;white-space:nowrap;
+}
+.btn-esp:hover{box-shadow:0 0 20px rgba(124,58,237,0.3);}
+.btn-sim{
+  padding:9px 20px;background:transparent;border:1px solid var(--border);border-radius:7px;
+  color:var(--text2);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .25s;
+}
+.btn-sim:hover{border-color:rgba(124,58,237,0.3);color:var(--text);}
+.btn-sim.active-sim{border-color:var(--green);color:var(--green);background:rgba(34,197,94,0.05);}
+.esp-status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);}
+.esp-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease infinite;}
+.esp-dot.sim{background:var(--amber);box-shadow:0 0 8px var(--amber);}
+.esp-dot.off{background:var(--dim);box-shadow:none;animation:none;}
+
+/* ALERTS TABLE */
+.alerts-table-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border);}
+.alerts-table{width:100%;border-collapse:collapse;}
+.alerts-table th{padding:12px 16px;background:rgba(15,10,35,0.6);font-size:11px;font-weight:700;letter-spacing:1px;color:var(--dim);text-transform:uppercase;text-align:left;white-space:nowrap;}
+.alerts-table td{padding:12px 16px;font-size:13px;color:var(--text2);border-top:1px solid rgba(124,58,237,0.05);white-space:nowrap;}
+.alerts-table tr:hover td{background:rgba(124,58,237,0.03);}
+.sev-badge{display:inline-block;padding:3px 9px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px;}
+.sev-HIGH{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:var(--red);}
+.sev-MEDIUM{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);color:var(--amber);}
+.sev-LOW{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:var(--green);}
+
+/* ANALYTICS SECTION */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.analytics-full{margin-bottom:24px;}
+
+/* REPORT SECTION */
+.report-section{max-width:700px;}
+.report-card{
+  padding:28px;background:var(--card);border:1px solid var(--border);border-radius:12px;
+  margin-bottom:20px;
+}
+.report-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:600;margin-bottom:8px;}
+.report-desc{color:var(--text2);font-size:14px;line-height:1.6;margin-bottom:20px;}
+.report-stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+.rep-stat{padding:14px;background:rgba(15,10,35,0.6);border:1px solid var(--border);border-radius:8px;}
+.rep-stat-val{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;color:var(--neon);}
+.rep-stat-lbl{font-size:12px;color:var(--dim);margin-top:3px;}
+.btn-report{
+  padding:12px 28px;background:linear-gradient(135deg,#3B1D8A,rgba(124,58,237,0.2));
+  border:1px solid var(--neon);border-radius:8px;color:var(--neon);
+  font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:2px;
+  cursor:pointer;transition:all .3s;box-shadow:0 0 20px rgba(124,58,237,0.15);
+  margin-right:10px;margin-bottom:10px;
+}
+.btn-report:hover{box-shadow:0 0 35px rgba(124,58,237,0.4);transform:translateY(-1px);}
+
+/* SETTINGS SECTION */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.settings-card{padding:24px;background:var(--card);border:1px solid var(--border);border-radius:12px;}
+.settings-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:600;margin-bottom:18px;color:var(--neon);}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(124,58,237,0.06);}
+.setting-row:last-child{border-bottom:none;}
+.setting-label{font-size:14px;color:var(--text);}
+.setting-sub{font-size:12px;color:var(--dim);margin-top:2px;}
+.toggle{position:relative;display:inline-block;width:40px;height:22px;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(0,20,40,0.8);border:1px solid var(--border);border-radius:22px;transition:.3s;}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:2px;background:var(--dim);border-radius:50%;transition:.3s;}
+.toggle input:checked+.toggle-slider{background:rgba(124,58,237,0.15);border-color:var(--neon);}
+.toggle input:checked+.toggle-slider::before{transform:translateX(17px);background:var(--neon);box-shadow:0 0 8px var(--neon);}
+
+/* PAGE SECTION HEADER */
+.section-hdr{margin-bottom:24px;}
+.section-hdr h2{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;margin-bottom:4px;}
+.section-hdr p{color:var(--text2);font-size:14px;}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .kpi-row{grid-template-columns:repeat(2,1fr);}
+  .charts-row{grid-template-columns:1fr;}
+  .charts-row-2{grid-template-columns:1fr;}
+  .analytics-grid{grid-template-columns:1fr;}
+  .settings-grid{grid-template-columns:1fr;}
+  .auth-wrapper{grid-template-columns:1fr;}
+  .auth-left{display:none;}
+  .auth-right{padding:36px 28px;}
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main-content{margin-left:0;}
+  .topbar{left:0;}
+  .hamburger{display:block;}
+  .nav{padding:0 20px;}
+  .nav-links{display:none;}
+  .hero{padding:100px 20px 60px;}
+  .stats-bar{gap:30px;padding:30px 20px;}
+  .features{padding:60px 20px;}
+  .cta-section{padding:60px 20px;}
+  .how-section{padding:60px 20px;}
+  .how-step:not(:last-child)::after{display:none;}
+}
+@media(max-width:600px){
+  .kpi-row{grid-template-columns:1fr 1fr;}
+  .form-row-2{grid-template-columns:1fr;}
+  .report-stats-grid{grid-template-columns:1fr;}
+}
+
+/* ── AI ANALYSIS SECTION ── */
+.btn-analyze{
+  padding:12px 32px;
+  background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(0,180,150,0.15));
+  border:1px solid var(--neon);border-radius:9px;
+  color:var(--neon);font-family:'Orbitron',monospace;
+  font-size:12px;font-weight:700;letter-spacing:2px;
+  cursor:pointer;transition:all .3s;
+  box-shadow:0 0 24px rgba(124,58,237,0.2);
+  position:relative;overflow:hidden;
+}
+.btn-analyze::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(124,58,237,0.15),transparent);transform:translateX(-100%);transition:transform .5s;}
+.btn-analyze:hover::before{transform:translateX(100%);}
+.btn-analyze:hover{box-shadow:0 0 45px rgba(124,58,237,0.5);transform:translateY(-2px);}
+.btn-analyze:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.analyze-status-bar{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 20px;border-radius:10px;margin-bottom:20px;
+  background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.2);
+  font-size:14px;color:var(--neon);font-family:'Share Tech Mono',monospace;
+}
+.analyze-spinner{width:16px;height:16px;border-radius:50%;border:2px solid rgba(124,58,237,0.2);border-top-color:var(--neon);animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.analyze-detail-card{padding:18px 20px;border-radius:10px;background:var(--card);border:1px solid var(--border);text-align:center;transition:all .3s;}
+.analyze-detail-card.ok{border-color:rgba(34,197,94,0.3);background:rgba(0,255,136,0.04);}
+.analyze-detail-card.warn{border-color:rgba(255,184,0,0.3);background:rgba(245,158,11,0.04);}
+.analyze-detail-card.bad{border-color:rgba(239,68,68,0.35);background:rgba(255,34,68,0.04);}
+.adc-icon{font-size:24px;margin-bottom:6px;}
+.adc-label{font-size:10px;color:var(--dim);letter-spacing:1.5px;font-family:'Share Tech Mono',monospace;margin-bottom:6px;}
+.adc-val{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:var(--neon);}
+.analysis-table-wrap{overflow-x:auto;max-height:500px;overflow-y:auto;}
+.analysis-table{width:100%;border-collapse:collapse;font-size:12px;}
+.analysis-table th{padding:10px 12px;background:rgba(12,8,28,0.95);font-size:10px;font-weight:700;letter-spacing:1px;color:var(--dim);text-transform:uppercase;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:2;border-bottom:1px solid var(--border);}
+.analysis-table td{padding:9px 12px;color:var(--text2);border-top:1px solid rgba(124,58,237,0.04);white-space:nowrap;font-family:'Share Tech Mono',monospace;font-size:11px;}
+.analysis-table tr:hover td{background:rgba(124,58,237,0.03);}
+.analysis-table td.st-NORMAL{color:var(--green);}
+.analysis-table td.st-WARNING{color:var(--amber);}
+.analysis-table td.st-LEAK{color:#ff8800;font-weight:600;}
+.analysis-table td.st-CRITICAL{color:var(--red);font-weight:700;}
+.analysis-table td.lk-YES{color:var(--red);font-weight:600;}
+.analysis-table td.lk-NO{color:var(--green);}
+.analysis-table td.lk-POSSIBLE{color:var(--amber);}
+.analysis-table td.cr-YES{color:var(--amber);font-weight:600;}
+.analysis-table td.cr-NO{color:var(--text2);}
+.an-row-num{color:var(--dim) !important;font-size:10px !important;}
+
+/* ── UPGRADED AI ANALYSIS PAGE ── */
+/* Alert Banner for AI section */
+#ai-alert-banner{
+  display:none;position:relative;
+  padding:14px 20px 14px 18px;
+  border-radius:10px;margin-bottom:20px;
+  background:linear-gradient(90deg,rgba(239,68,68,0.1),rgba(239,68,68,0.04));
+  border:1px solid rgba(239,68,68,0.45);
+  box-shadow:0 0 24px rgba(239,68,68,0.08);
+  animation:bannerPulse 2s ease infinite;
+}
+#ai-alert-banner.warn-banner{
+  background:linear-gradient(90deg,rgba(245,158,11,0.1),rgba(245,158,11,0.04));
+  border-color:rgba(245,158,11,0.45);
+  box-shadow:0 0 24px rgba(245,158,11,0.08);
+}
+@keyframes bannerPulse{0%,100%{opacity:1;}50%{opacity:.85;}}
+.ai-banner-inner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.ai-banner-icon{font-size:22px;flex-shrink:0;}
+.ai-banner-content{flex:1;}
+.ai-banner-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--red);letter-spacing:.5px;}
+#ai-alert-banner.warn-banner .ai-banner-title{color:var(--amber);}
+.ai-banner-msg{font-size:13px;color:var(--text2);margin-top:3px;}
+.ai-banner-dismiss{background:none;border:1px solid rgba(239,68,68,0.3);border-radius:6px;color:var(--dim);font-size:11px;padding:4px 12px;cursor:pointer;transition:all .2s;flex-shrink:0;}
+.ai-banner-dismiss:hover{border-color:var(--red);color:var(--red);}
+
+/* Live AI Output Panel */
+.ai-output-panel{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:24px;margin-bottom:20px;position:relative;overflow:hidden;
+}
+.ai-output-panel::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--neon),var(--cyan),transparent);
+}
+.ai-output-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;flex-wrap:wrap;gap:10px;
+}
+.ai-output-title{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--neon);display:flex;align-items:center;gap:8px;}
+.ai-live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.5s ease infinite;}
+.ai-auto-badge{font-size:10px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);color:var(--green);border-radius:4px;padding:2px 8px;font-family:'Share Tech Mono',monospace;letter-spacing:1px;}
+
+/* AI State Badge */
+.ai-state-display{
+  display:flex;align-items:center;gap:16px;
+  padding:16px 20px;border-radius:10px;margin-bottom:18px;
+  background:rgba(15,10,35,0.6);border:1px solid rgba(124,58,237,0.15);
+  flex-wrap:wrap;
+}
+.ai-state-label{font-size:10px;color:var(--dim);letter-spacing:1.5px;font-family:'Share Tech Mono',monospace;margin-bottom:4px;}
+.ai-state-value{font-family:'Orbitron',monospace;font-size:18px;font-weight:700;}
+.ai-state-sep{width:1px;height:40px;background:rgba(124,58,237,0.15);flex-shrink:0;}
+
+/* AI Metrics Grid */
+.ai-metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px;}
+.ai-metric-card{
+  padding:14px 16px;border-radius:10px;
+  background:rgba(15,10,35,0.7);border:1px solid var(--border);
+  transition:border-color .3s;
+}
+.ai-metric-card.ok-card{border-color:rgba(34,197,94,0.25);}
+.ai-metric-card.warn-card{border-color:rgba(245,158,11,0.25);}
+.ai-metric-card.bad-card{border-color:rgba(239,68,68,0.25);}
+.ai-metric-icon{font-size:16px;margin-bottom:6px;}
+.ai-metric-label{font-size:9px;color:var(--dim);letter-spacing:1.5px;font-family:'Share Tech Mono',monospace;text-transform:uppercase;margin-bottom:4px;}
+.ai-metric-val{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;}
+.ai-metric-sub{font-size:10px;color:var(--dim);margin-top:2px;}
+.c-green{color:var(--green);}
+.c-amber{color:var(--amber);}
+.c-red{color:var(--red);}
+.c-neon{color:var(--neon);}
+.c-cyan{color:var(--cyan);}
+
+/* AI Prediction + Action Box */
+.ai-prediction-box{
+  padding:16px 18px;border-radius:10px;
+  background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);
+  margin-bottom:12px;
+}
+.ai-prediction-label{font-size:10px;color:var(--neon);letter-spacing:1.5px;font-family:'Share Tech Mono',monospace;margin-bottom:6px;}
+.ai-prediction-text{font-size:14px;color:var(--text);line-height:1.6;}
+
+.ai-action-box{
+  padding:16px 18px;border-radius:10px;
+  background:rgba(0,200,150,0.04);border:1px solid rgba(20,184,166,0.2);
+  margin-bottom:18px;
+}
+.ai-action-label{font-size:10px;color:var(--cyan);letter-spacing:1.5px;font-family:'Share Tech Mono',monospace;margin-bottom:6px;}
+.ai-action-text{font-size:14px;color:var(--text);line-height:1.6;}
+
+/* Severity Bar */
+.ai-severity-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.ai-severity-label{font-size:11px;color:var(--dim);letter-spacing:1px;font-family:'Share Tech Mono',monospace;}
+.ai-sev-btn{
+  padding:5px 18px;border-radius:20px;font-family:'Orbitron',monospace;
+  font-size:11px;font-weight:700;letter-spacing:1px;border:1px solid;
+  transition:all .3s;
+}
+.ai-sev-LOW{color:var(--green);border-color:rgba(34,197,94,0.4);background:rgba(34,197,94,0.08);}
+.ai-sev-MED{color:var(--amber);border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.08);}
+.ai-sev-HIGH{color:var(--red);border-color:rgba(239,68,68,0.5);background:rgba(239,68,68,0.1);animation:sevPulse 1.5s ease infinite;}
+@keyframes sevPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.3);}50%{box-shadow:0 0 0 6px rgba(239,68,68,0);}}
+
+/* Health Scores Row */
+.health-scores-row{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;
+  margin-bottom:20px;
+}
+.health-score-card{
+  padding:18px 20px;border-radius:12px;
+  background:var(--card);border:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.hs-label{font-size:10px;color:var(--dim);letter-spacing:1.5px;font-family:'Share Tech Mono',monospace;margin-bottom:8px;}
+.hs-value{font-family:'Orbitron',monospace;font-size:28px;font-weight:700;margin-bottom:6px;}
+.hs-bar-track{height:4px;border-radius:2px;background:rgba(255,255,255,0.07);overflow:hidden;}
+.hs-bar-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+.hs-sub{font-size:11px;color:var(--dim);margin-top:6px;}
+
+/* AI Suggestions Box */
+.ai-suggestions-box{
+  padding:20px;border-radius:12px;
+  background:rgba(20,184,166,0.04);
+  border:1px solid rgba(20,184,166,0.15);
+  margin-bottom:20px;
+}
+.ai-sug-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--cyan);}
+.ai-sug-list{display:flex;flex-direction:column;gap:8px;}
+.ai-sug-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 14px;border-radius:8px;
+  background:rgba(15,10,35,0.5);border:1px solid rgba(20,184,166,0.1);
+  font-size:13px;color:var(--text2);line-height:1.5;
+}
+.ai-sug-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.ai-sug-dot.sug-ok{background:var(--green);box-shadow:0 0 5px var(--green);}
+.ai-sug-dot.sug-warn{background:var(--amber);box-shadow:0 0 5px var(--amber);}
+.ai-sug-dot.sug-bad{background:var(--red);box-shadow:0 0 5px var(--red);}
+
+/* Animation Steps */
+.anim-steps-row{
+  display:flex;align-items:center;gap:0;margin-bottom:20px;
+  background:rgba(15,10,35,0.6);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;flex-wrap:wrap;
+}
+.anim-step{
+  flex:1;min-width:100px;padding:10px 14px;text-align:center;
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  letter-spacing:.8px;color:var(--dim);
+  border-right:1px solid var(--border);
+  transition:all .4s;position:relative;
+}
+.anim-step:last-child{border-right:none;}
+.anim-step.step-active{background:rgba(124,58,237,0.12);color:var(--neon);}
+.anim-step.step-done{background:rgba(34,197,94,0.07);color:var(--green);}
+.anim-step-icon{font-size:16px;margin-bottom:3px;}
+.anim-step-label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+
+/* Temp Impact Message */
+.temp-impact-msg{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;border-radius:8px;margin-bottom:16px;
+  font-size:13px;color:var(--text2);
+  background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.15);
+  transition:all .3s;
+}
+.temp-impact-msg.ti-low{background:rgba(34,197,94,0.05);border-color:rgba(34,197,94,0.15);}
+.temp-impact-msg.ti-high{background:rgba(239,68,68,0.07);border-color:rgba(239,68,68,0.2);}
+.temp-impact-icon{font-size:18px;flex-shrink:0;}
+
+/* Animate-in */
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.fade-in{animation:fadeSlideIn .35s ease both;}
+</style>
+</head>
+<body>
+<div class="global-bg"></div>
+<div id="particles"></div>
+
+<!-- ════════════════════════════════════════
+     LANDING PAGE
+════════════════════════════════════════ -->
+<div class="page active" id="page-landing">
+  <nav class="nav">
+    <div class="nav-logo" onclick="showPage('page-landing')">
+      <div class="nav-logo-icon">💧</div>
+      LeakSense<span style="color:var(--cyan)">AI</span>
+    </div>
+    <div class="nav-links">
+      <a onclick="scrollToId('features-section')">Features</a>
+      <a onclick="scrollToId('how-section')">How it Works</a>
+      <a onclick="showPage('page-login')">Login</a>
+      <button class="nav-btn" onclick="showPage('page-signup')">GET STARTED</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-badge"><span class="hero-badge-dot"></span> LIVE MONITORING ACTIVE</div>
+      <h1>Smart Water<br><span class="grad">Leak Detection</span><br>Powered by AI</h1>
+      <p>Real-time IoT pipeline monitoring with AI-driven leak prediction. Protect your city's water infrastructure before leaks become disasters.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="showPage('page-signup')">🚀 START FREE TRIAL</button>
+        <button class="btn-secondary" onclick="tryDemo()">▶ Try Demo Mode</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-item"><span class="stat-val">97.4%</span><div class="stat-lbl">Detection Accuracy</div></div>
+    <div class="stat-item"><span class="stat-val">2.5M+</span><div class="stat-lbl">Litres Saved</div></div>
+    <div class="stat-item"><span class="stat-val">38</span><div class="stat-lbl">Cities Deployed</div></div>
+    <div class="stat-item"><span class="stat-val">&lt;2s</span><div class="stat-lbl">Alert Latency</div></div>
+    <div class="stat-item"><span class="stat-val">99.9%</span><div class="stat-lbl">Uptime SLA</div></div>
+  </div>
+
+  <div class="features" id="features-section">
+    <div class="section-header">
+      <span class="section-label">// CAPABILITIES</span>
+      <div class="section-title">Everything You Need to<br>Monitor Water Pipelines</div>
+      <div class="section-sub">From ESP8266 sensor connectivity to AI prediction — one platform for smart cities.</div>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card"><div class="feat-icon">📡</div><div class="feat-title">Real-Time IoT Data</div><div class="feat-desc">Connect ESP8266 sensors over WiFi. Live flow, pressure, and loss data updated every second on your dashboard.</div></div>
+      <div class="feat-card"><div class="feat-icon">🤖</div><div class="feat-title">AI Leak Prediction</div><div class="feat-desc">Machine learning model predicts leaks 5–10 minutes in advance. LOW / MEDIUM / HIGH risk levels with confidence scores.</div></div>
+      <div class="feat-card"><div class="feat-icon">🚨</div><div class="feat-title">Instant Alerts</div><div class="feat-desc">Multi-channel alerts via dashboard banner, email, and SMS. Never miss a critical pipeline event again.</div></div>
+      <div class="feat-card"><div class="feat-icon">📊</div><div class="feat-title">Advanced Analytics</div><div class="feat-desc">Flow comparison charts, loss trends, pressure heatmaps, and historical data for up to 500 readings.</div></div>
+      <div class="feat-card"><div class="feat-icon">📄</div><div class="feat-title">Report Generator</div><div class="feat-desc">One-click exportable reports with total water loss, avg flow, peak pressure, and alert summaries.</div></div>
+      <div class="feat-card"><div class="feat-icon">🏙️</div><div class="feat-title">Smart City Ready</div><div class="feat-desc">Built for municipal water boards and utilities. Scalable from a single zone to an entire city's network.</div></div>
+    </div>
+  </div>
+
+  <div class="how-section" id="how-section">
+    <div class="section-header">
+      <span class="section-label">// HOW IT WORKS</span>
+      <div class="section-title">Up and Running in Minutes</div>
+    </div>
+    <div class="how-grid">
+      <div class="how-step"><div class="how-num">01</div><div class="how-title">INSTALL SENSORS</div><div class="how-desc">Deploy ESP8266 flow sensors at pipeline entry/exit points.</div></div>
+      <div class="how-step"><div class="how-num">02</div><div class="how-num" style="font-size:0"></div><div class="how-title">CONNECT API</div><div class="how-desc">Enter your ESP8266 IP — data streams instantly to the cloud.</div></div>
+      <div class="how-step"><div class="how-num">03</div><div class="how-title">AI ANALYZES</div><div class="how-desc">Our model runs anomaly detection on every reading in real-time.</div></div>
+      <div class="how-step"><div class="how-num">04</div><div class="how-title">GET ALERTS</div><div class="how-desc">Receive predictions and alerts before water loss escalates.</div></div>
+    </div>
+  </div>
+
+  <div class="cta-section">
+    <h2>Ready to Protect Your<br>Water Infrastructure?</h2>
+    <p>Join 38 cities already using LeakSense AI. Free plan — no credit card required.</p>
+    <button class="btn-primary" onclick="showPage('page-signup')" style="display:inline-block;width:auto;">🚀 CREATE FREE ACCOUNT</button>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-logo">💧 LeakSenseAI</div>
+    <div class="footer-links">
+      <a>Privacy</a><a>Terms</a><a>Docs</a><a>Contact</a>
+    </div>
+    <div class="footer-note">© 2025 LeakSense AI. Smart Cities Initiative.</div>
+  </footer>
+</div>
+
+<!-- ════════════════════════════════════════
+     LOGIN PAGE
+════════════════════════════════════════ -->
+<div class="page flex-page" id="page-login">
+  <div class="auth-wrapper">
+    <div class="auth-left">
+      <div class="auth-logo" onclick="showPage('page-landing')">
+        <div class="auth-logo-icon">💧</div>
+        LeakSense<span style="color:var(--cyan)">AI</span>
+      </div>
+      <div class="auth-hero">
+        <h2>Monitor your<br><span>water pipeline</span><br>in real time</h2>
+        <p>AI-powered leak detection for smart cities. Sign in to access your live IoT dashboard.</p>
+        <div class="auth-stats">
+          <div><span class="auth-stat-val">97%</span><div class="auth-stat-lbl">ACCURACY</div></div>
+          <div><span class="auth-stat-val">2.5M</span><div class="auth-stat-lbl">LITERS SAVED</div></div>
+          <div><span class="auth-stat-val">38</span><div class="auth-stat-lbl">CITIES</div></div>
+        </div>
+      </div>
+      <div class="status-row"><div class="status-dot"></div>All systems operational</div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-subtitle">No account? <a onclick="showPage('page-signup')">Sign up free →</a></div>
+      <div class="error-msg" id="login-err"></div>
+      <div class="success-msg" id="login-suc">✓ Login successful! Redirecting...</div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" id="l-email" type="email" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <div class="form-row">
+          <label class="form-label" style="margin-bottom:0">Password</label>
+          <a class="form-forgot">Forgot password?</a>
+        </div>
+        <input class="form-input" id="l-pass" type="password" placeholder="••••••••" style="margin-top:7px"/>
+      </div>
+      <div class="form-check">
+        <input type="checkbox" id="l-remember"/>
+        <label for="l-remember">Keep me signed in</label>
+      </div>
+      <button class="btn-submit" id="login-btn" onclick="doLogin()">SIGN IN TO DASHBOARD</button>
+      <div class="auth-divider">or</div>
+      <button class="btn-demo-auth" onclick="doLoginDemo()">🚀 Continue with Demo Account</button>
+      <div style="text-align:center;margin-top:20px;color:var(--dim);font-size:12px;">
+        <a onclick="showPage('page-landing')" style="color:var(--dim);cursor:pointer;">← Back to home</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SIGNUP PAGE
+════════════════════════════════════════ -->
+<div class="page flex-page" id="page-signup">
+  <div class="auth-wrapper">
+    <div class="auth-right" style="padding:44px 40px;">
+      <div class="auth-title">Create Account</div>
+      <div class="auth-subtitle">Already have one? <a onclick="showPage('page-login')">Sign in →</a></div>
+      <div class="error-msg" id="su-err"></div>
+      <div class="success-msg" id="su-suc">✓ Account created! Redirecting to dashboard...</div>
+      <div class="form-row-2">
+        <div class="form-group"><label class="form-label">First Name</label><input class="form-input" id="su-fname" type="text" placeholder="Arjun"/></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" id="su-lname" type="text" placeholder="Sharma"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Work Email</label><input class="form-input" id="su-email" type="email" placeholder="arjun@smartcity.gov.in"/></div>
+      <div class="form-group"><label class="form-label">Organization / City</label><input class="form-input" id="su-org" type="text" placeholder="Pune Municipal Corporation"/></div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="su-pass" type="password" placeholder="Min 8 characters" oninput="checkStrength(this.value)"/>
+        <div class="pw-bars"><div class="pw-bar" id="pb1"></div><div class="pw-bar" id="pb2"></div><div class="pw-bar" id="pb3"></div><div class="pw-bar" id="pb4"></div></div>
+        <div class="pw-label" id="pw-lbl">ENTER PASSWORD</div>
+      </div>
+      <div class="form-group"><label class="form-label">Confirm Password</label><input class="form-input" id="su-confirm" type="password" placeholder="Repeat password"/></div>
+      <div class="form-check" style="margin-bottom:18px;"><input type="checkbox" id="su-terms"/><label for="su-terms" style="font-size:13px;color:var(--text2);">I agree to the <a style="color:var(--neon);">Terms of Service</a> and <a style="color:var(--neon);">Privacy Policy</a></label></div>
+      <button class="btn-submit" id="su-btn" onclick="doSignup()">CREATE FREE ACCOUNT</button>
+      <div style="text-align:center;margin-top:16px;color:var(--dim);font-size:12px;">
+        <a onclick="showPage('page-landing')" style="color:var(--dim);cursor:pointer;">← Back to home</a>
+      </div>
+    </div>
+    <div class="auth-left" style="order:2;border-left:1px solid var(--border);border-right:none;">
+      <div class="auth-logo" onclick="showPage('page-landing')"><div class="auth-logo-icon">💧</div>LeakSense<span style="color:var(--cyan)">AI</span></div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="feat-card" style="padding:18px;"><div style="font-size:20px;margin-bottom:8px;">📡</div><div class="feat-title" style="font-size:12px;">Real-Time IoT Dashboard</div><div class="feat-desc" style="font-size:13px;">Connect ESP8266 sensors and watch live flow data appear instantly.</div></div>
+        <div class="feat-card" style="padding:18px;"><div style="font-size:20px;margin-bottom:8px;">🤖</div><div class="feat-title" style="font-size:12px;">AI Leak Prediction</div><div class="feat-desc" style="font-size:13px;">Alerted 5–10 minutes before a leak becomes critical.</div></div>
+        <div class="feat-card" style="padding:18px;"><div style="font-size:20px;margin-bottom:8px;">📊</div><div class="feat-title" style="font-size:12px;">Analytics & Reports</div><div class="feat-desc" style="font-size:13px;">Exportable reports with flow trends and cost savings.</div></div>
+      </div>
+      <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--green);">
+        <span style="font-size:18px;">🎉</span><span>Free plan includes full dashboard — no credit card required.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     DASHBOARD PAGE
+════════════════════════════════════════ -->
+<div class="page" id="page-dashboard">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon">💧</div>
+      <div class="sidebar-logo">LeakSense<span style="color:var(--cyan)">AI</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="switchDash('overview')"><span class="nav-icon">📊</span>Overview</div>
+      <div class="nav-item" onclick="switchDash('analytics')"><span class="nav-icon">📈</span>Analytics</div>
+      <div class="nav-item" onclick="switchDash('analysis')"><span class="nav-icon">🧠</span>AI Analysis</div>
+      <div class="nav-item" onclick="switchDash('alerts')"><span class="nav-icon">🚨</span>Alert History</div>
+      <div class="nav-item" onclick="switchDash('reports')"><span class="nav-icon">📄</span>Reports</div>
+      <div class="nav-sep"></div>
+      <div class="nav-item" onclick="switchDash('settings')"><span class="nav-icon">⚙️</span>Settings</div>
+      <div class="nav-item" onclick="doLogout()"><span class="nav-icon">🚪</span>Sign Out</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="dash-avatar">D</div>
+        <div><div class="user-name" id="dash-name">Demo User</div><div class="user-plan">FREE PLAN</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title" id="dash-page-title">Overview</div>
+    </div>
+    <div class="topbar-right">
+      <div class="system-status"><div class="status-dot"></div><span id="topbar-status">All Systems Normal</span></div>
+      <div class="topbar-time" id="topbar-clock"></div>
+      <button class="btn-logout" onclick="doLogout()">LOGOUT</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="dashboard-layout">
+    <div class="main-content">
+
+      <!-- OVERVIEW SECTION -->
+      <div class="dash-section active" id="sec-overview">
+        <!-- Alert Banner -->
+        <div class="alert-banner" id="alert-banner">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-text">
+            <strong id="alert-title">LEAK DETECTED — HIGH RISK</strong>
+            <span id="alert-msg">Significant flow loss detected. Immediate inspection required.</span>
+          </div>
+          <button class="alert-dismiss" onclick="dismissAlert()">Dismiss</button>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-row">
+          <div class="kpi-card blue"><div class="kpi-icon">💧</div><div class="kpi-label">Flow In</div><div class="kpi-value" id="kpi-flowin">--</div><div class="kpi-change"></div></div>
+          <div class="kpi-card green"><div class="kpi-icon">🔄</div><div class="kpi-label">Flow Out</div><div class="kpi-value" id="kpi-flowout">--</div><div class="kpi-change"></div></div>
+          <div class="kpi-card amber"><div class="kpi-icon">⚡</div><div class="kpi-label">Pressure</div><div class="kpi-value" id="kpi-pressure">--</div><div class="kpi-change">PSI</div></div>
+          <div class="kpi-card red"><div class="kpi-icon">⚠️</div><div class="kpi-label">Water Loss</div><div class="kpi-value" id="kpi-loss">--</div><div class="kpi-change">%</div></div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">FLOW MONITORING</div>
+              <div class="chart-badge badge-live">● LIVE</div>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chart-flow"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">PRESSURE TREND</div>
+              <div class="chart-badge badge-live">● LIVE</div>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chart-pressure"></canvas></div>
+          </div>
+        </div>
+
+        <!-- AI Panel -->
+        <div class="ai-panel">
+          <div class="ai-header">
+            <div class="ai-icon-wrap">🤖</div>
+            <div><div class="ai-label">AI PREDICTION ENGINE</div><div class="ai-sublabel">Real-time anomaly detection & leak forecasting</div></div>
+          </div>
+          <div class="ai-risk-row">
+            <div class="risk-badge" id="ai-risk-badge">LOW</div>
+            <div class="ai-message" id="ai-message">System nominal. Flow patterns within expected parameters. Continuous monitoring active.</div>
+          </div>
+          <div class="ai-indicators">
+            <div class="ai-ind"><div class="ai-ind-dot" id="ind-anomaly" style="background:var(--green);box-shadow:0 0 6px var(--green);"></div><span id="ind-anomaly-txt">No Anomaly</span></div>
+            <div class="ai-ind"><div class="ai-ind-dot" id="ind-trend" style="background:var(--neon);box-shadow:0 0 6px var(--neon);"></div><span id="ind-trend-txt">Flow Stable</span></div>
+            <div class="ai-ind"><div class="ai-ind-dot" id="ind-pressure" style="background:var(--green);box-shadow:0 0 6px var(--green);"></div><span id="ind-pressure-txt">Pressure OK</span></div>
+            <div class="ai-ind" style="margin-left:auto;">Readings: <strong id="ai-reading-count" style="color:var(--neon);margin-left:5px;">0</strong></div>
+          </div>
+        </div>
+
+        <!-- ESP8266 Panel -->
+        <div class="esp-panel">
+          <div class="esp-header">
+            <div class="esp-title">⚡ ESP8266 SENSOR CONFIGURATION</div>
+            <div class="esp-status"><div class="esp-dot sim" id="esp-dot"></div><span id="esp-status-txt">Simulation Mode</span></div>
+          </div>
+          <div class="esp-row">
+            <input class="esp-input" id="esp-ip" placeholder="http://192.168.x.x/data" type="text"/>
+            <button class="btn-esp" onclick="connectESP()">CONNECT ESP8266</button>
+            <button class="btn-sim active-sim" id="sim-btn" onclick="toggleSimulation()">● SIMULATION ON</button>
+            <button class="btn-sim" onclick="clearHistory()">🗑 CLEAR DATA</button>
+          </div>
+        </div>
+
+        <!-- Loss Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">WATER LOSS TREND</div>
+            <div class="chart-badge badge-ai">🤖 AI MONITORED</div>
+          </div>
+          <div class="chart-canvas-wrap" style="height:180px;"><canvas id="chart-loss"></canvas></div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS SECTION -->
+      <div class="dash-section" id="sec-analytics">
+        <div class="section-hdr"><h2>Analytics</h2><p>Detailed flow analysis and trend visualization</p></div>
+        <div class="kpi-row">
+          <div class="kpi-card blue"><div class="kpi-icon">📊</div><div class="kpi-label">Avg Flow In</div><div class="kpi-value" id="avg-flowin">--</div><div class="kpi-change">avg</div></div>
+          <div class="kpi-card green"><div class="kpi-icon">📉</div><div class="kpi-label">Avg Flow Out</div><div class="kpi-value" id="avg-flowout">--</div><div class="kpi-change">avg</div></div>
+          <div class="kpi-card amber"><div class="kpi-icon">🔝</div><div class="kpi-label">Peak Pressure</div><div class="kpi-value" id="peak-pressure">--</div><div class="kpi-change">PSI max</div></div>
+          <div class="kpi-card red"><div class="kpi-icon">💦</div><div class="kpi-label">Total Loss</div><div class="kpi-value" id="total-loss">--</div><div class="kpi-change">% avg loss</div></div>
+        </div>
+        <div class="analytics-grid">
+          <div class="chart-card"><div class="chart-header"><div class="chart-title">FLOW IN vs FLOW OUT</div></div><div class="chart-canvas-wrap" style="height:250px;"><canvas id="chart-compare"></canvas></div></div>
+          <div class="chart-card"><div class="chart-header"><div class="chart-title">LOSS DISTRIBUTION</div></div><div class="chart-canvas-wrap" style="height:250px;"><canvas id="chart-bar-loss"></canvas></div></div>
+        </div>
+        <div class="chart-card analytics-full"><div class="chart-header"><div class="chart-title">PRESSURE HISTORY (ALL READINGS)</div></div><div class="chart-canvas-wrap" style="height:200px;"><canvas id="chart-pressure-hist"></canvas></div></div>
+      </div>
+
+      <!-- ALERTS SECTION -->
+      <div class="dash-section" id="sec-alerts">
+        <div class="section-hdr" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+          <div><h2>Alert History</h2><p>All detected anomalies and leak events</p></div>
+          <button class="btn-report" onclick="clearAlerts()" style="margin:0;">CLEAR ALL</button>
+        </div>
+        <div class="chart-card" style="margin-bottom:24px;">
+          <div class="alerts-table-wrap">
+            <table class="alerts-table">
+              <thead><tr><th>TIME</th><th>TYPE</th><th>SEVERITY</th><th>FLOW IN</th><th>FLOW OUT</th><th>LOSS %</th><th>PRESSURE</th></tr></thead>
+              <tbody id="alerts-tbody"><tr><td colspan="7" style="text-align:center;color:var(--dim);padding:32px;">No alerts recorded yet. System is monitoring...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS SECTION -->
+      <div class="dash-section" id="sec-reports">
+        <div class="section-hdr"><h2>Reports</h2><p>Generate and export system reports</p></div>
+        <div class="report-section">
+          <div class="report-card">
+            <div class="report-title">📊 System Report Summary</div>
+            <div class="report-desc">Generate a comprehensive report including total water loss, average flow rates, peak pressure events, and number of alerts triggered.</div>
+            <div class="report-stats-grid">
+              <div class="rep-stat"><div class="rep-stat-val" id="rep-readings">0</div><div class="rep-stat-lbl">Total Readings</div></div>
+              <div class="rep-stat"><div class="rep-stat-val" id="rep-alerts">0</div><div class="rep-stat-lbl">Total Alerts</div></div>
+              <div class="rep-stat"><div class="rep-stat-val" id="rep-avg-loss">0%</div><div class="rep-stat-lbl">Avg Water Loss</div></div>
+              <div class="rep-stat"><div class="rep-stat-val" id="rep-uptime">100%</div><div class="rep-stat-lbl">System Uptime</div></div>
+            </div>
+            <button class="btn-report" onclick="generateReport('txt')">⬇ DOWNLOAD TXT</button>
+            <button class="btn-report" onclick="generateReport('html')">⬇ DOWNLOAD HTML</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI ANALYSIS SECTION — UPGRADED -->
+      <div class="dash-section" id="sec-analysis">
+
+        <!-- Section Header -->
+        <div class="section-hdr" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h2>🧠 AI Analysis Engine</h2>
+            <p>Real-time pipeline intelligence — flow, pressure, temperature, corrosion &amp; health scoring</p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <div class="form-group" style="margin:0;display:flex;align-items:center;gap:8px;">
+              <label class="form-label" style="margin:0;white-space:nowrap;">Pipeline (m)</label>
+              <input class="form-input" id="pipeline-length" type="number" value="500" min="10" max="100000" style="width:90px;padding:8px 12px;"/>
+            </div>
+            <button class="btn-analyze" id="analyze-btn" onclick="runFullAnalysis()">⚡ ANALYZE</button>
+          </div>
+        </div>
+
+        <!-- Alert Banner (≥5% loss) -->
+        <div id="ai-alert-banner" class="ai-alert-banner">
+          <div class="ai-banner-inner">
+            <div class="ai-banner-icon">🚨</div>
+            <div class="ai-banner-content">
+              <div class="ai-banner-title" id="ai-banner-title">LEAK THRESHOLD EXCEEDED</div>
+              <div class="ai-banner-msg" id="ai-banner-msg">Water loss has crossed the warning threshold. Immediate inspection advised.</div>
+            </div>
+            <button class="ai-banner-dismiss" onclick="document.getElementById('ai-alert-banner').style.display='none'">Dismiss</button>
+          </div>
+        </div>
+
+        <!-- Analysis Animation Steps -->
+        <div class="anim-steps-row" id="anim-steps-row" style="display:none;">
+          <div class="anim-step" id="astep-flow"><div class="anim-step-icon">💧</div><span class="anim-step-label">Flow</span></div>
+          <div class="anim-step" id="astep-pressure"><div class="anim-step-icon">⚡</div><span class="anim-step-label">Pressure</span></div>
+          <div class="anim-step" id="astep-temp"><div class="anim-step-icon">🌡️</div><span class="anim-step-label">Temp</span></div>
+          <div class="anim-step" id="astep-corrosion"><div class="anim-step-icon">🧪</div><span class="anim-step-label">Corrosion</span></div>
+          <div class="anim-step" id="astep-result"><div class="anim-step-icon">🤖</div><span class="anim-step-label">Result</span></div>
+        </div>
+
+        <!-- Status Bar -->
+        <div id="analyze-status-bar" style="display:none;" class="analyze-status-bar">
+          <div class="analyze-spinner"></div>
+          <span id="analyze-status-txt">Processing sensor data…</span>
+        </div>
+
+        <!-- ══ LIVE AI OUTPUT PANEL ══ -->
+        <div class="ai-output-panel fade-in" id="ai-live-panel">
+          <div class="ai-output-header">
+            <div class="ai-output-title">
+              <div class="ai-live-dot"></div>
+              AI ANALYSIS
+              <span class="ai-auto-badge">AUTO ● 2s</span>
+            </div>
+            <div style="font-size:11px;color:var(--dim);font-family:'Share Tech Mono',monospace;">
+              Last update: <span id="ai-last-update">--</span>
+            </div>
+          </div>
+
+          <!-- AI State Display -->
+          <div class="ai-state-display">
+            <div>
+              <div class="ai-state-label">AI STATE</div>
+              <div class="ai-state-value c-green" id="live-ai-state">NORMAL</div>
+            </div>
+            <div class="ai-state-sep"></div>
+            <div>
+              <div class="ai-state-label">FLOW IN</div>
+              <div class="ai-state-value c-neon" id="live-flow-in">--</div>
+            </div>
+            <div style="font-size:10px;color:var(--dim);align-self:center;">L/min</div>
+            <div class="ai-state-sep"></div>
+            <div>
+              <div class="ai-state-label">FLOW OUT</div>
+              <div class="ai-state-value c-green" id="live-flow-out">--</div>
+            </div>
+            <div style="font-size:10px;color:var(--dim);align-self:center;">L/min</div>
+            <div class="ai-state-sep"></div>
+            <div>
+              <div class="ai-state-label">LOSS</div>
+              <div class="ai-state-value" id="live-loss-val" style="color:var(--amber);">--</div>
+            </div>
+            <div style="font-size:10px;color:var(--dim);align-self:center;">%</div>
+          </div>
+
+          <!-- Metrics Grid -->
+          <div class="ai-metrics-grid" id="ai-metrics-grid">
+            <div class="ai-metric-card ok-card" id="mc-pressure">
+              <div class="ai-metric-icon">⚡</div>
+              <div class="ai-metric-label">Pressure</div>
+              <div class="ai-metric-val c-amber" id="mc-pressure-val">-- PSI</div>
+              <div class="ai-metric-sub" id="mc-pressure-state">NORMAL</div>
+            </div>
+            <div class="ai-metric-card ok-card" id="mc-temp">
+              <div class="ai-metric-icon">🌡️</div>
+              <div class="ai-metric-label">Temperature</div>
+              <div class="ai-metric-val c-cyan" id="mc-temp-val">-- °C</div>
+              <div class="ai-metric-sub" id="mc-temp-state">MED</div>
+            </div>
+            <div class="ai-metric-card ok-card" id="mc-corrosion">
+              <div class="ai-metric-icon">🧪</div>
+              <div class="ai-metric-label">Corrosion Risk</div>
+              <div class="ai-metric-val c-green" id="mc-corrosion-val">LOW</div>
+              <div class="ai-metric-sub" id="mc-corrosion-score">Score: 0%</div>
+            </div>
+            <div class="ai-metric-card ok-card" id="mc-severity">
+              <div class="ai-metric-icon">🎯</div>
+              <div class="ai-metric-label">Severity</div>
+              <div class="ai-metric-val c-green" id="mc-severity-val">LOW</div>
+              <div class="ai-metric-sub">Current level</div>
+            </div>
+          </div>
+
+          <!-- Temperature Impact Message -->
+          <div class="temp-impact-msg ti-low" id="temp-impact-msg">
+            <span class="temp-impact-icon">🌡️</span>
+            <span id="temp-impact-text">Temperature within normal range — no thermal expansion risk detected.</span>
+          </div>
+
+          <!-- Prediction + Action -->
+          <div class="ai-prediction-box">
+            <div class="ai-prediction-label">// PREDICTION</div>
+            <div class="ai-prediction-text" id="live-prediction">System nominal. Flow patterns within expected parameters. Continuous monitoring active.</div>
+          </div>
+          <div class="ai-action-box">
+            <div class="ai-action-label">// RECOMMENDED ACTION</div>
+            <div class="ai-action-text" id="live-action">No immediate action required. Continue routine monitoring schedule.</div>
+          </div>
+
+          <!-- Severity Row -->
+          <div class="ai-severity-row">
+            <div class="ai-severity-label">SEVERITY:</div>
+            <div class="ai-sev-btn" id="live-sev-badge">LOW</div>
+          </div>
+        </div>
+
+        <!-- ══ HEALTH SCORES ══ -->
+        <div class="health-scores-row fade-in">
+          <div class="health-score-card">
+            <div class="hs-label">CORROSION SCORE</div>
+            <div class="hs-value c-green" id="hs-corrosion-val">0%</div>
+            <div class="hs-bar-track"><div class="hs-bar-fill" id="hs-corrosion-bar" style="width:0%;background:var(--green);"></div></div>
+            <div class="hs-sub" id="hs-corrosion-sub">Risk level: LOW</div>
+          </div>
+          <div class="health-score-card">
+            <div class="hs-label">PIPELINE HEALTH</div>
+            <div class="hs-value c-green" id="hs-health-val">100%</div>
+            <div class="hs-bar-track"><div class="hs-bar-fill" id="hs-health-bar" style="width:100%;background:var(--green);"></div></div>
+            <div class="hs-sub" id="hs-health-sub">System optimal</div>
+          </div>
+          <div class="health-score-card">
+            <div class="hs-label">TEMP VARIATION INDEX</div>
+            <div class="hs-value c-cyan" id="hs-temp-val">0.0°</div>
+            <div class="hs-bar-track"><div class="hs-bar-fill" id="hs-temp-bar" style="width:0%;background:var(--cyan);"></div></div>
+            <div class="hs-sub" id="hs-temp-sub">Variation: LOW</div>
+          </div>
+        </div>
+
+        <!-- ══ AI SUGGESTIONS ══ -->
+        <div class="ai-suggestions-box fade-in">
+          <div class="ai-sug-header">🤖 AI SUGGESTIONS</div>
+          <div class="ai-sug-list" id="ai-sug-list">
+            <div class="ai-sug-item"><div class="ai-sug-dot sug-ok"></div>System is operating within normal parameters.</div>
+            <div class="ai-sug-item"><div class="ai-sug-dot sug-ok"></div>No maintenance required at this time.</div>
+            <div class="ai-sug-item"><div class="ai-sug-dot sug-ok"></div>Continue routine sensor calibration on schedule.</div>
+          </div>
+        </div>
+
+        <!-- ══ DEEP ANALYSIS RESULTS (post-button) ══ -->
+        <div id="analysis-summary" style="display:none;">
+          <div class="kpi-row" style="margin-bottom:16px;">
+            <div class="kpi-card blue"><div class="kpi-icon">📋</div><div class="kpi-label">Total Readings</div><div class="kpi-value" id="an-total">--</div><div class="kpi-change">analyzed</div></div>
+            <div class="kpi-card amber"><div class="kpi-icon">💧</div><div class="kpi-label">Avg Loss %</div><div class="kpi-value" id="an-avgloss">--</div><div class="kpi-change">smoothed</div></div>
+            <div class="kpi-card red"><div class="kpi-icon">🔴</div><div class="kpi-label">Overall Status</div><div class="kpi-value" id="an-status" style="font-size:16px;">--</div><div class="kpi-change">pipeline health</div></div>
+            <div class="kpi-card green"><div class="kpi-icon">📍</div><div class="kpi-label">Leak Location</div><div class="kpi-value" id="an-location" style="font-size:14px;">--</div><div class="kpi-change">from inlet</div></div>
+          </div>
+
+          <!-- Detail Summary Cards -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;">
+            <div class="analyze-detail-card" id="adc-leak">
+              <div class="adc-icon">🔍</div>
+              <div class="adc-label">LEAK DETECTED</div>
+              <div class="adc-val" id="adc-leak-val">--</div>
+            </div>
+            <div class="analyze-detail-card" id="adc-corrosion">
+              <div class="adc-icon">🧪</div>
+              <div class="adc-label">CORROSION</div>
+              <div class="adc-val" id="adc-corrosion-val">--</div>
+            </div>
+            <div class="analyze-detail-card" id="adc-maintenance">
+              <div class="adc-icon">🔧</div>
+              <div class="adc-label">MAINTENANCE</div>
+              <div class="adc-val" id="adc-maintenance-val" style="font-size:12px;line-height:1.4;">--</div>
+            </div>
+            <div class="analyze-detail-card" id="adc-pressure">
+              <div class="adc-icon">⚡</div>
+              <div class="adc-label">PRESSURE TREND</div>
+              <div class="adc-val" id="adc-pressure-val">--</div>
+            </div>
+          </div>
+
+          <!-- Export Row -->
+          <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+            <button class="btn-report" onclick="exportAnalysisCSV()">⬇ EXPORT CSV (Excel)</button>
+            <button class="btn-report" onclick="exportAnalysisJSON()">⬇ EXPORT JSON</button>
+            <button class="btn-report" onclick="exportAnalysisHTML()">⬇ EXPORT HTML REPORT</button>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);font-family:'Share Tech Mono',monospace;">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);"></div>
+              <span id="an-rowcount">0</span> rows ready for export
+            </div>
+          </div>
+
+          <!-- Full Analysis Table -->
+          <div class="chart-card" style="padding:0;overflow:hidden;">
+            <div class="chart-header" style="padding:16px 20px;border-bottom:1px solid var(--border);">
+              <div class="chart-title">FULL ANALYSIS TABLE — ALL READINGS</div>
+              <div class="chart-badge badge-ai">🤖 AI PROCESSED</div>
+            </div>
+            <div class="analysis-table-wrap">
+              <table class="analysis-table" id="analysis-table">
+                <thead>
+                  <tr>
+                    <th>#</th><th>TIMESTAMP</th><th>FLOW IN</th><th>FLOW OUT</th>
+                    <th>PRESSURE</th><th>TEMP °C</th><th>LOSS</th><th>LOSS %</th>
+                    <th>STATUS</th><th>LEAK</th><th>LOCATION</th><th>CORROSION</th><th>MAINTENANCE</th>
+                  </tr>
+                </thead>
+                <tbody id="analysis-tbody">
+                  <tr><td colspan="13" style="text-align:center;color:var(--dim);padding:40px;">Click ⚡ ANALYZE to process all sensor readings.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div id="analysis-empty" style="display:none;text-align:center;padding:60px 20px;color:var(--dim);">
+          <div style="font-size:48px;margin-bottom:16px;">📡</div>
+          <div style="font-family:'Orbitron',monospace;font-size:16px;color:var(--text2);margin-bottom:8px;">No Data to Analyze</div>
+          <div style="font-size:14px;">Run the simulation or connect your ESP8266 sensor to collect readings, then click ANALYZE.</div>
+        </div>
+      </div>
+
+      <!-- SETTINGS SECTION -->
+      <div class="dash-section" id="sec-settings">
+        <div class="section-hdr"><h2>Settings</h2><p>Configure your monitoring preferences</p></div>
+        <div class="settings-grid">
+          <div class="settings-card">
+            <div class="settings-title">🔔 NOTIFICATIONS</div>
+            <div class="setting-row"><div><div class="setting-label">Leak Alerts</div><div class="setting-sub">Show banner on high-risk detection</div></div><label class="toggle"><input type="checkbox" checked id="set-alerts"/><span class="toggle-slider"></span></label></div>
+            <div class="setting-row"><div><div class="setting-label">Sound Alerts</div><div class="setting-sub">Audio notification on critical events</div></div><label class="toggle"><input type="checkbox" id="set-sound"/><span class="toggle-slider"></span></label></div>
+            <div class="setting-row"><div><div class="setting-label">AI Predictions</div><div class="setting-sub">Show predictive risk assessments</div></div><label class="toggle"><input type="checkbox" checked id="set-ai"/><span class="toggle-slider"></span></label></div>
+          </div>
+          <div class="settings-card">
+            <div class="settings-title">📡 DATA & DISPLAY</div>
+            <div class="setting-row"><div><div class="setting-label">Auto Simulation</div><div class="setting-sub">Use simulated data when ESP8266 offline</div></div><label class="toggle"><input type="checkbox" checked id="set-sim"/><span class="toggle-slider"></span></label></div>
+            <div class="setting-row"><div><div class="setting-label">Dark Animations</div><div class="setting-sub">Particle effects and glows</div></div><label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label></div>
+            <div class="setting-row"><div><div class="setting-label">High Freq. Polling</div><div class="setting-sub">Poll ESP8266 every 500ms (vs 2s)</div></div><label class="toggle"><input type="checkbox" id="set-hf"/><span class="toggle-slider"></span></label></div>
+          </div>
+          <div class="settings-card" style="grid-column:1/-1;">
+            <div class="settings-title">⚠️ THRESHOLD CONFIGURATION</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:4px;">
+              <div class="form-group"><label class="form-label">Loss Alert Threshold (%)</label><input class="form-input" id="thresh-loss" type="number" value="5" min="1" max="50"/></div>
+              <div class="form-group"><label class="form-label">High Pressure Limit (PSI)</label><input class="form-input" id="thresh-psi" type="number" value="80" min="10" max="200"/></div>
+              <div class="form-group"><label class="form-label">Min Flow Rate (L/min)</label><input class="form-input" id="thresh-flow" type="number" value="10" min="1" max="100"/></div>
+              <div class="form-group"><label class="form-label">AI Consecutive Readings</label><input class="form-input" id="thresh-ai" type="number" value="3" min="1" max="10"/></div>
+            </div>
+            <button class="btn-report" onclick="alert('Thresholds saved!')">SAVE THRESHOLDS</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// PAGE SYSTEM
+// ═══════════════════════════════════════
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = '';
+  });
+  const page = document.getElementById(pageId);
+  page.classList.add('active');
+
+  if (pageId === 'page-dashboard') {
+    page.style.display = 'flex';
+    page.style.flexDirection = 'column';
+    updateDashUser();
+    // Restore last reading into KPIs + charts so they are never blank on open
+    if (sensorLog.length > 0) {
+      const last = sensorLog[sensorLog.length - 1];
+      updateKPIs(last);
+      sensorLog.slice(-30).forEach(d => updateCharts(d));
+    }
+    if (!simRunning) startSimulation();
+  } else if (pageId === 'page-login' || pageId === 'page-signup') {
+    page.style.display = 'flex';
+  } else {
+    page.style.display = 'block';
+  }
+  window.scrollTo(0, 0);
+}
+
+function scrollToId(id) {
+  showPage('page-landing');
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }, 100);
+}
+
+function switchDash(section) {
+  document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + section).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('dash-page-title').textContent = {
+    overview:'Overview',analytics:'Analytics',analysis:'AI Analysis',alerts:'Alert History',reports:'Reports',settings:'Settings'
+  }[section];
+  if (section === 'analytics') updateAnalyticsCharts();
+  if (section === 'reports') updateReportStats();
+  if (section === 'analysis') initAnalysisSection();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ═══════════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════════
+const pCont = document.getElementById('particles');
+for (let i = 0; i < 22; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const sz = Math.random() * 3 + 1;
+  p.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;animation-duration:${9+Math.random()*14}s;animation-delay:${Math.random()*12}s;`;
+  pCont.appendChild(p);
+}
+
+// ═══════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════
+function showAuthError(elId, msg) {
+  const el = document.getElementById(elId);
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+function hideAuthMsgs(...ids) {
+  ids.forEach(id => { document.getElementById(id).style.display = 'none'; });
+}
+
+function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  hideAuthMsgs('login-err','login-suc');
+  if (!email) return showAuthError('login-err', 'Please enter your email address.');
+  if (!pass) return showAuthError('login-err', 'Please enter your password.');
+  const users = JSON.parse(localStorage.getItem('leaksense_users') || '[]');
+  const found = users.find(u => u.email === email && u.password === pass);
+  if (!found && !(email === 'demo@leaksense.ai' && pass === 'demo123')) {
+    return showAuthError('login-err', 'Invalid credentials. Try the demo account below.');
+  }
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>AUTHENTICATING...';
+  const user = found || { name: 'Demo User', email, org: 'LeakSense Demo' };
+  localStorage.setItem('leaksense_user', JSON.stringify(user));
+  document.getElementById('login-suc').style.display = 'block';
+  setTimeout(() => { btn.disabled=false; btn.textContent='SIGN IN TO DASHBOARD'; showPage('page-dashboard'); }, 1400);
+}
+
+function doLoginDemo() {
+  document.getElementById('l-email').value = 'demo@leaksense.ai';
+  document.getElementById('l-pass').value = 'demo123';
+  setTimeout(doLogin, 300);
+}
+
+function doSignup() {
+  const fname = document.getElementById('su-fname').value.trim();
+  const lname = document.getElementById('su-lname').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const org = document.getElementById('su-org').value.trim();
+  const pass = document.getElementById('su-pass').value;
+  const confirm = document.getElementById('su-confirm').value;
+  const terms = document.getElementById('su-terms').checked;
+  hideAuthMsgs('su-err','su-suc');
+  if (!fname||!lname) return showAuthError('su-err','Please enter your full name.');
+  if (!email||!email.includes('@')) return showAuthError('su-err','Please enter a valid email.');
+  if (!pass||pass.length<8) return showAuthError('su-err','Password must be at least 8 characters.');
+  if (pass!==confirm) return showAuthError('su-err','Passwords do not match.');
+  if (!terms) return showAuthError('su-err','Please agree to the Terms of Service.');
+  const users = JSON.parse(localStorage.getItem('leaksense_users')||'[]');
+  if (users.find(u=>u.email===email)) return showAuthError('su-err','An account with this email already exists.');
+  const btn = document.getElementById('su-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span>CREATING ACCOUNT...';
+  setTimeout(()=>{
+    const user={name:fname+' '+lname,email,org,password:pass,plan:'free',created:new Date().toISOString()};
+    users.push(user);
+    localStorage.setItem('leaksense_users',JSON.stringify(users));
+    localStorage.setItem('leaksense_user',JSON.stringify(user));
+    document.getElementById('su-suc').style.display='block';
+    setTimeout(()=>{btn.disabled=false;btn.textContent='CREATE FREE ACCOUNT';showPage('page-dashboard');},1500);
+  },1200);
+}
+
+function checkStrength(val) {
+  const bars=['pb1','pb2','pb3','pb4'].map(id=>document.getElementById(id));
+  const label=document.getElementById('pw-lbl');
+  bars.forEach(b=>b.className='pw-bar');
+  if(!val.length){label.textContent='ENTER PASSWORD';return;}
+  let score=0;
+  if(val.length>=8)score++;
+  if(/[A-Z]/.test(val))score++;
+  if(/[0-9]/.test(val))score++;
+  if(/[^A-Za-z0-9]/.test(val))score++;
+  const cls=score<=1?'weak':score<=2?'medium':'strong';
+  for(let i=0;i<score;i++)bars[i].classList.add(cls);
+  label.textContent=['','WEAK','FAIR','GOOD','STRONG'][score]||'STRONG';
+  label.style.color=score<=1?'var(--red)':score<=2?'#ffe600':'var(--green)';
+}
+
+function doLogout() {
+  localStorage.removeItem('leaksense_user');
+  stopSimulation();
+  showPage('page-landing');
+}
+
+function tryDemo() {
+  localStorage.setItem('leaksense_user', JSON.stringify({name:'Demo User',email:'demo@leaksense.ai',org:'LeakSense Demo',plan:'free'}));
+  showPage('page-dashboard');
+}
+
+function updateDashUser() {
+  const u = JSON.parse(localStorage.getItem('leaksense_user')||'{}');
+  const name = u.name || 'Demo User';
+  document.getElementById('dash-name').textContent = name;
+  document.getElementById('dash-avatar').textContent = name.charAt(0).toUpperCase();
+}
+
+// ═══════════════════════════════════════
+// DATA & HISTORY
+// ═══════════════════════════════════════
+let sensorLog = JSON.parse(localStorage.getItem('leaksense_sensorlog') || '[]');
+let alertHistory = JSON.parse(localStorage.getItem('leaksense_alerts') || '[]');
+let consecutiveLoss = 0;
+let simRunning = false;
+let simInterval = null;
+let espMode = false;
+let espInterval = null;
+
+function saveHistory() {
+  if (sensorLog.length > 500) sensorLog.shift();
+  localStorage.setItem('leaksense_sensorlog', JSON.stringify(sensorLog));
+}
+
+function clearHistory() {
+  if (!confirm('Clear all sensor data?')) return;
+  sensorLog = [];
+  alertHistory = [];
+  localStorage.removeItem('leaksense_sensorlog');
+  localStorage.removeItem('leaksense_alerts');
+  consecutiveLoss = 0;
+  resetCharts();
+  renderAlertsTable();
+}
+
+function clearAlerts() {
+  if (!confirm('Clear all alert history?')) return;
+  alertHistory = [];
+  localStorage.removeItem('leaksense_alerts');
+  renderAlertsTable();
+}
+
+// ═══════════════════════════════════════
+// SIMULATION ENGINE
+// ═══════════════════════════════════════
+let simPhase = 0;
+let leakScenario = false;
+let leakTimer = 0;
+
+function generateSimData() {
+  simPhase += 0.05;
+  leakTimer++;
+  // Randomly trigger a leak scenario every ~60 readings
+  if (!leakScenario && Math.random() < 0.015) {
+    leakScenario = true;
+    leakTimer = 0;
+  }
+  if (leakScenario && leakTimer > 40) {
+    leakScenario = false;
+  }
+
+  let flowIn = 50 + Math.sin(simPhase) * 8 + Math.random() * 4;
+  let pressure = 55 + Math.sin(simPhase * 0.7) * 12 + Math.random() * 5;
+  let leakFactor = leakScenario ? (0.05 + (leakTimer/40)*0.2) : (Math.random() * 0.03);
+  let flowOut = flowIn * (1 - leakFactor);
+
+  flowIn = Math.max(10, +flowIn.toFixed(2));
+  flowOut = Math.max(5, +flowOut.toFixed(2));
+  pressure = Math.max(20, Math.min(100, +pressure.toFixed(1)));
+  // Clamp 0–100 and round to 1 dp — matches the ESP8266 poll path
+  const loss = +Math.min(100, Math.max(0, ((flowIn - flowOut) / flowIn) * 100)).toFixed(1);
+
+  // Temperature: 18–42°C with slow drift + noise
+  const temp = +(22 + Math.sin(simPhase * 0.3) * 10 + Math.random() * 3).toFixed(1);
+
+  return { flowIn, flowOut, pressure, loss, temp, time: new Date().toISOString() };
+}
+
+function startSimulation() {
+  if (simRunning) return;
+  simRunning = true;
+  simInterval = setInterval(() => {
+    const data = generateSimData();
+    processReading(data);
+  }, 2000);
+}
+
+function stopSimulation() {
+  simRunning = false;
+  if (simInterval) clearInterval(simInterval);
+  simInterval = null;
+}
+
+function toggleSimulation() {
+  if (simRunning && !espMode) {
+    stopSimulation();
+    document.getElementById('sim-btn').textContent = '● SIMULATION OFF';
+    document.getElementById('sim-btn').classList.remove('active-sim');
+    document.getElementById('esp-dot').className = 'esp-dot off';
+    document.getElementById('esp-status-txt').textContent = 'Inactive';
+  } else {
+    startSimulation();
+    document.getElementById('sim-btn').textContent = '● SIMULATION ON';
+    document.getElementById('sim-btn').classList.add('active-sim');
+    document.getElementById('esp-dot').className = 'esp-dot sim';
+    document.getElementById('esp-status-txt').textContent = 'Simulation Mode';
+    espMode = false;
+  }
+}
+
+// ═══════════════════════════════════════
+// ESP8266 CONNECT
+// ═══════════════════════════════════════
+async function connectESP() {
+  const rawIp = document.getElementById('esp-ip').value.trim();
+  if (!rawIp) {
+    alert('Enter your ESP8266 URL.\nExample: http://192.168.1.105/data\n\n(Find the IP in Arduino Serial Monitor after upload)');
+    return;
+  }
+
+  // Auto-fix: if user typed just an IP like 192.168.1.x, add http:// and /data
+  let url = rawIp;
+  if (!url.startsWith('http')) url = 'http://' + url;
+  if (!url.includes('/data') && !url.includes('/status')) url = url.replace(/\/?$/, '/data');
+  document.getElementById('esp-ip').value = url; // show corrected URL
+
+  stopSimulation();
+  espMode = true;
+
+  const dot = document.getElementById('esp-dot');
+  const txt = document.getElementById('esp-status-txt');
+  dot.className = 'esp-dot sim';
+  txt.textContent = 'Connecting to ESP8266…';
+
+  // Clear old interval
+  if (espInterval) { clearInterval(espInterval); espInterval = null; }
+
+  const interval = 2000; // ESP8266 sends every 1000ms, we poll every 2s to be safe
+
+  const pollESP = async () => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+      const r = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'no-cache',
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+
+      // Field map for LeakSense ESP8266 firmware v2.2.0
+      // Firmware sends: flowIn, flowOut, loss (=lossPct), lossLpm, pressure, alarmState, rssi, simMode
+      const flowIn   = parseFloat(d.flowIn  ?? d.flow_in  ?? 0);
+      const flowOut  = parseFloat(d.flowOut ?? d.flow_out ?? 0);
+      const pressure = parseFloat(d.pressure ?? 0);
+
+      // ── STARTUP / SENSOR-IDLE GUARD ──
+      // Uses < 0.1 threshold (not === 0) to catch near-zero floats from
+      // rolling-avg startup. Returns without updating charts while waiting.
+      if (flowIn > 0.5 && flowOut < 0.1) {
+        dot.className = 'esp-dot';
+        txt.textContent = `ESP8266 Live — Outlet idle (OUT=${flowOut.toFixed(2)}, waiting…)`;
+        return;
+      }
+
+      // ── LOSS % — always recomputed from raw sensor values ──
+      // Never trust d.loss from firmware: rolling-avg zeroes at boot cause
+      // the firmware to emit loss=100 even with working sensors.
+      // Formula: loss% = ((IN - OUT) / IN) × 100, clamped 0–100.
+      let lossPercent = 0;
+      if (flowIn > 0) { lossPercent = ((flowIn - flowOut) / flowIn) * 100; }
+      lossPercent = Math.max(0, Math.min(100, lossPercent));
+
+      const data = {
+        flowIn, flowOut, pressure, loss: lossPercent,
+        time: new Date().toISOString()
+      };
+
+      processReading(data);
+
+      // Update status
+      dot.className = 'esp-dot'; // green
+      const simTag  = d.simMode   ? ' [SIM]'           : '';
+      const rssiTag = d.rssi != null ? ` | RSSI:${d.rssi}dBm` : '';
+      const alarmTag = d.alarmLabel && d.alarmLabel !== 'NORMAL' ? ` | ⚠ ${d.alarmLabel}` : '';
+      txt.textContent = `ESP8266 Live${simTag}${rssiTag}${alarmTag}`;
+
+    } catch(e) {
+      dot.className = 'esp-dot off';
+      if (e.name === 'AbortError') {
+        txt.textContent = 'Timeout — ESP8266 not responding';
+      } else if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+        txt.textContent = 'Cannot reach ESP8266 — check WiFi & IP';
+      } else {
+        txt.textContent = 'Error: ' + e.message;
+      }
+      console.warn('[LeakSense] ESP8266 error:', e);
+      espMode = false;
+      if (espInterval) { clearInterval(espInterval); espInterval = null; }
+      startSimulation();
+    }
+  };
+
+  espInterval = setInterval(pollESP, interval);
+  pollESP(); // immediate first attempt
+}
+
+// ═══════════════════════════════════════
+// PROCESS READING & AI
+// ═══════════════════════════════════════
+const WINDOW = 30; // chart window
+let lossHistory = [];
+
+function processReading(data) {
+  sensorLog.push(data);
+  if (sensorLog.length > 500) sensorLog.shift();
+  saveHistory();
+  lossHistory.push(data.loss);
+  if (lossHistory.length > WINDOW) lossHistory.shift();
+
+  updateKPIs(data);
+  updateCharts(data);
+  runAI(data);
+}
+
+function updateKPIs(data) {
+  document.getElementById('kpi-flowin').textContent   = data.flowIn.toFixed(1);
+  document.getElementById('kpi-flowout').textContent  = data.flowOut.toFixed(1);
+  document.getElementById('kpi-pressure').textContent = data.pressure.toFixed(1);
+  // Clamp 0–100, display with 1 decimal — kpi-change div already shows the '%' unit
+  let lossPercent = 0;
+  if (data.flowIn > 0) { lossPercent = ((data.flowIn - data.flowOut) / data.flowIn) * 100; }
+  lossPercent = Math.max(0, Math.min(100, lossPercent));
+  document.getElementById('kpi-loss').textContent = lossPercent.toFixed(1) + '%';
+}
+
+// ═══════════════════════════════════════
+// AI PREDICTION
+// ═══════════════════════════════════════
+let highRiskCount = 0;
+
+function runAI(data) {
+  const aiEnabled = document.getElementById('set-ai').checked;
+  if (!aiEnabled) return;
+
+  const lossThresh = parseFloat(document.getElementById('thresh-loss').value) || 5;
+  const psiThresh = parseFloat(document.getElementById('thresh-psi').value) || 80;
+  const consThresh = parseInt(document.getElementById('thresh-ai').value) || 3;
+
+  let risk = 'LOW';
+  let message = 'System nominal. Flow patterns within expected parameters. Continuous monitoring active.';
+
+  // Detect loss
+  if (data.loss > lossThresh) {
+    consecutiveLoss++;
+  } else {
+    consecutiveLoss = Math.max(0, consecutiveLoss - 1);
+  }
+
+  // Trend analysis
+  const trend = lossHistory.length >= 5
+    ? lossHistory.slice(-5).reduce((a,b)=>a+b,0)/5
+    : data.loss;
+
+  // Pressure anomaly
+  const pressureHigh = data.pressure > psiThresh;
+
+  if (consecutiveLoss >= consThresh && data.loss > lossThresh * 2) {
+    risk = 'HIGH';
+    message = `⚠ LEAK CONFIRMED. Loss of ${data.loss.toFixed(1)}% sustained for ${consecutiveLoss} consecutive readings. Immediate pipeline inspection required!`;
+    triggerAlert('HIGH', data);
+    highRiskCount++;
+  } else if (consecutiveLoss >= Math.floor(consThresh/2) || pressureHigh) {
+    risk = 'MEDIUM';
+    message = pressureHigh
+      ? `Elevated pressure detected (${data.pressure.toFixed(1)} PSI). Monitor for developing stress fractures.`
+      : `Possible leak developing. Flow loss at ${data.loss.toFixed(1)}% — watch for escalation in the next 5–10 minutes.`;
+    if (consecutiveLoss >= Math.floor(consThresh/2)) {
+      triggerAlert('MEDIUM', data);
+    }
+  } else if (trend > lossThresh * 0.6) {
+    risk = 'MEDIUM';
+    message = `Rising loss trend detected (avg ${trend.toFixed(1)}%). AI predicts possible leak in the next 5–10 minutes if trend continues.`;
+  }
+
+  // Update AI panel
+  const riskBadge = document.getElementById('ai-risk-badge');
+  riskBadge.className = 'risk-badge risk-' + risk;
+  riskBadge.textContent = risk;
+  document.getElementById('ai-message').textContent = message;
+  document.getElementById('ai-reading-count').textContent = sensorLog.length;
+
+  // Indicators
+  updateIndicator('ind-anomaly', 'ind-anomaly-txt', consecutiveLoss > 1, consecutiveLoss > 1 ? 'Anomaly Detected' : 'No Anomaly', 'var(--red)', 'var(--green)');
+  updateIndicator('ind-trend', 'ind-trend-txt', trend > lossThresh * 0.5, trend > lossThresh * 0.5 ? 'Loss Trend ↑' : 'Flow Stable', 'var(--amber)', 'var(--neon)');
+  updateIndicator('ind-pressure', 'ind-pressure-txt', pressureHigh, pressureHigh ? 'High Pressure!' : 'Pressure OK', 'var(--red)', 'var(--green)');
+}
+
+function updateIndicator(dotId, txtId, warn, label, warnColor, okColor) {
+  const dot = document.getElementById(dotId);
+  const color = warn ? warnColor : okColor;
+  dot.style.background = color;
+  dot.style.boxShadow = `0 0 6px ${color}`;
+  document.getElementById(txtId).textContent = label;
+}
+
+function triggerAlert(level, data) {
+  const alertEnabled = document.getElementById('set-alerts').checked;
+  const now = new Date().toLocaleTimeString();
+
+  // Only store if new or changed severity
+  const last = alertHistory[alertHistory.length - 1];
+  if (last && last.severity === level && (Date.now() - new Date(last.rawTime).getTime()) < 10000) return;
+
+  const alert = {
+    time: now,
+    rawTime: new Date().toISOString(),
+    type: level === 'HIGH' ? 'Leak Confirmed' : level === 'MEDIUM' ? 'Anomaly Detected' : 'Warning',
+    severity: level,
+    flowIn: data.flowIn.toFixed(1),
+    flowOut: data.flowOut.toFixed(1),
+    loss: data.loss.toFixed(1),
+    pressure: data.pressure.toFixed(1)
+  };
+  alertHistory.unshift(alert);
+  if (alertHistory.length > 100) alertHistory.pop();
+  localStorage.setItem('leaksense_alerts', JSON.stringify(alertHistory));
+
+  if (alertEnabled && level === 'HIGH') {
+    showAlertBanner(level, data);
+    if (document.getElementById('set-sound').checked) {
+      try {
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(440, ctx.currentTime);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+        osc.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      } catch(e){}
+    }
+  }
+
+  renderAlertsTable();
+}
+
+function showAlertBanner(level, data) {
+  const banner = document.getElementById('alert-banner');
+  document.getElementById('alert-title').textContent = level === 'HIGH' ? '🚨 LEAK DETECTED — HIGH RISK' : '⚠️ ANOMALY DETECTED — MEDIUM RISK';
+  document.getElementById('alert-msg').textContent = `Flow loss: ${data.loss.toFixed(1)}% | Pressure: ${data.pressure.toFixed(1)} PSI | Immediate inspection recommended.`;
+  banner.classList.add('show');
+  document.getElementById('topbar-status').textContent = '⚠ Leak Alert Active';
+}
+
+function dismissAlert() {
+  document.getElementById('alert-banner').classList.remove('show');
+  document.getElementById('topbar-status').textContent = 'All Systems Normal';
+}
+
+function renderAlertsTable() {
+  const tbody = document.getElementById('alerts-tbody');
+  if (!alertHistory.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--dim);padding:32px;">No alerts recorded yet. System is monitoring...</td></tr>';
+    return;
+  }
+  tbody.innerHTML = alertHistory.map(a => `
+    <tr>
+      <td style="font-family:'Share Tech Mono',monospace;">${a.time}</td>
+      <td>${a.type}</td>
+      <td><span class="sev-badge sev-${a.severity}">${a.severity}</span></td>
+      <td style="color:var(--neon);">${a.flowIn}</td>
+      <td style="color:var(--green);">${a.flowOut}</td>
+      <td style="color:${a.loss>10?'var(--red)':a.loss>5?'var(--amber)':'var(--green)'};">${a.loss}%</td>
+      <td>${a.pressure} PSI</td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════
+const chartDefaults = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: { duration: 300 },
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { display: false },
+    y: {
+      grid: { color: 'rgba(124,58,237,0.06)', drawBorder: false },
+      ticks: { color: '#6B7280', font: { family: "'Share Tech Mono'" } },
+      border: { display: false }
+    }
+  }
+};
+
+let flowChart, pressureChart, lossChart;
+const flowInData = [], flowOutData = [], pressureData = [], lossData = [], labels = [];
+
+function initCharts() {
+  const ctx1 = document.getElementById('chart-flow').getContext('2d');
+  flowChart = new Chart(ctx1, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Flow In', data: flowInData, borderColor: '#7C3AED', backgroundColor: 'rgba(124,58,237,0.06)', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true },
+        { label: 'Flow Out', data: flowOutData, borderColor: '#22C55E', backgroundColor: 'rgba(0,255,136,0.04)', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true }
+      ]
+    },
+    options: { ...chartDefaults, plugins: { legend: { display: true, labels: { color: '#9CA3AF', font: { family: "'Rajdhani'" }, boxWidth: 12 } } } }
+  });
+
+  const ctx2 = document.getElementById('chart-pressure').getContext('2d');
+  pressureChart = new Chart(ctx2, {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'PSI', data: pressureData, borderColor: '#F59E0B', backgroundColor: 'rgba(255,184,0,0.07)', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true }] },
+    options: { ...chartDefaults }
+  });
+
+  const ctx3 = document.getElementById('chart-loss').getContext('2d');
+  lossChart = new Chart(ctx3, {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Loss%', data: lossData, borderColor: '#EF4444', backgroundColor: 'rgba(255,34,68,0.07)', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true }] },
+    options: { ...chartDefaults }
+  });
+}
+
+function updateCharts(data) {
+  const t = new Date().toLocaleTimeString('en',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  labels.push(t);
+  flowInData.push(data.flowIn);
+  flowOutData.push(data.flowOut);
+  pressureData.push(data.pressure);
+  lossData.push(data.loss);
+  if (labels.length > WINDOW) {
+    labels.shift(); flowInData.shift(); flowOutData.shift(); pressureData.shift(); lossData.shift();
+  }
+  if (flowChart) { flowChart.update(); pressureChart.update(); lossChart.update(); }
+}
+
+function resetCharts() {
+  [labels, flowInData, flowOutData, pressureData, lossData, lossHistory].forEach(a => a.length = 0);
+  if (flowChart) { flowChart.update(); pressureChart.update(); lossChart.update(); }
+}
+
+// ═══════════════════════════════════════
+// ANALYTICS CHARTS
+// ═══════════════════════════════════════
+let compareChart, barChart, pressHistChart;
+
+function updateAnalyticsCharts() {
+  if (!sensorLog.length) return;
+
+  const slice = sensorLog.slice(-100);
+  const labels2 = slice.map((_,i)=>i+1+'');
+  const fIn = slice.map(d=>d.flowIn);
+  const fOut = slice.map(d=>d.flowOut);
+  const psi = slice.map(d=>d.pressure);
+  const loss = slice.map(d=>d.loss);
+
+  // Update stats
+  document.getElementById('avg-flowin').textContent = (fIn.reduce((a,b)=>a+b,0)/fIn.length).toFixed(1);
+  document.getElementById('avg-flowout').textContent = (fOut.reduce((a,b)=>a+b,0)/fOut.length).toFixed(1);
+  document.getElementById('peak-pressure').textContent = Math.max(...psi).toFixed(1);
+  document.getElementById('total-loss').textContent = (loss.reduce((a,b)=>a+b,0)/loss.length).toFixed(1)+'%';
+
+  // Compare chart
+  if (compareChart) { compareChart.destroy(); }
+  const ctx = document.getElementById('chart-compare').getContext('2d');
+  compareChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: labels2, datasets: [
+      { label:'Flow In', data: fIn, borderColor:'#7C3AED', backgroundColor:'rgba(124,58,237,0.05)', borderWidth:2, pointRadius:0, tension:.4, fill:true },
+      { label:'Flow Out', data: fOut, borderColor:'#22C55E', backgroundColor:'rgba(0,255,136,0.04)', borderWidth:2, pointRadius:0, tension:.4, fill:true }
+    ]},
+    options: { ...chartDefaults, plugins:{ legend:{ display:true, labels:{ color:'#9CA3AF', font:{family:"'Rajdhani'"}, boxWidth:12 } } }, responsive:true, maintainAspectRatio:false }
+  });
+
+  // Bar loss
+  if (barChart) { barChart.destroy(); }
+  const buckets = [0,2,5,8,12,20]; const counts = new Array(buckets.length).fill(0);
+  loss.forEach(l => { for(let i=buckets.length-1;i>=0;i--){if(l>=buckets[i]){counts[i]++;break;}} });
+  const ctx2 = document.getElementById('chart-bar-loss').getContext('2d');
+  barChart = new Chart(ctx2, {
+    type: 'bar',
+    data: { labels:['0-2%','2-5%','5-8%','8-12%','12-20%','20%+'], datasets:[{ data: counts, backgroundColor: ['rgba(0,255,136,0.4)','rgba(0,255,136,0.25)','rgba(255,184,0,0.3)','rgba(255,100,0,0.3)','rgba(239,68,68,0.35)','rgba(255,34,68,0.5)'], borderColor:['var(--green)','var(--green)','var(--amber)','#ff6600','var(--red)','var(--red)'], borderWidth:1, borderRadius:4 }] },
+    options: { ...chartDefaults, responsive:true, maintainAspectRatio:false }
+  });
+
+  // Pressure history
+  if (pressHistChart) { pressHistChart.destroy(); }
+  const ctx3 = document.getElementById('chart-pressure-hist').getContext('2d');
+  pressHistChart = new Chart(ctx3, {
+    type: 'line',
+    data: { labels: labels2, datasets:[{ data: psi, borderColor:'#F59E0B', backgroundColor:'rgba(255,184,0,0.06)', borderWidth:2, pointRadius:0, tension:.4, fill:true }] },
+    options: { ...chartDefaults, responsive:true, maintainAspectRatio:false }
+  });
+}
+
+// ═══════════════════════════════════════
+// REPORTS
+// ═══════════════════════════════════════
+function updateReportStats() {
+  document.getElementById('rep-readings').textContent = sensorLog.length;
+  document.getElementById('rep-alerts').textContent = alertHistory.length;
+  const avgLoss = sensorLog.length ? (sensorLog.reduce((a,b)=>a+b.loss,0)/sensorLog.length).toFixed(1)+'%' : '0%';
+  document.getElementById('rep-avg-loss').textContent = avgLoss;
+}
+
+function generateReport(type) {
+  const u = JSON.parse(localStorage.getItem('leaksense_user')||'{}');
+  const now = new Date().toLocaleString();
+  const avgFlow = sensorLog.length ? (sensorLog.reduce((a,b)=>a+b.flowIn,0)/sensorLog.length).toFixed(2) : 0;
+  const avgLoss = sensorLog.length ? (sensorLog.reduce((a,b)=>a+b.loss,0)/sensorLog.length).toFixed(2) : 0;
+  const peakPSI = sensorLog.length ? Math.max(...sensorLog.map(d=>d.pressure)).toFixed(1) : 0;
+
+  if (type === 'txt') {
+    const txt = `LeakSense AI — System Report
+Generated: ${now}
+User: ${u.name||'Demo User'} | Org: ${u.org||'—'}
+${'='.repeat(50)}
+SUMMARY
+Total Readings     : ${sensorLog.length}
+Total Alerts       : ${alertHistory.length}
+Average Flow In    : ${avgFlow} L/min
+Average Water Loss : ${avgLoss}%
+Peak Pressure      : ${peakPSI} PSI
+System Uptime      : 100%
+${'='.repeat(50)}
+RECENT ALERTS (last 10)
+${alertHistory.slice(0,10).map(a=>`[${a.time}] ${a.severity} — ${a.type} | Loss: ${a.loss}% PSI: ${a.pressure}`).join('\n')||'No alerts recorded.'}
+${'='.repeat(50)}
+LeakSense AI — Smart Water Infrastructure Protection`;
+    const blob = new Blob([txt], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `leaksense-report-${Date.now()}.txt`;
+    a.click();
+  } else {
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>LeakSense AI Report</title>
+<style>body{font-family:sans-serif;background:#0B0F1A;color:#E5E7EB;padding:40px;max-width:800px;margin:0 auto;}
+h1{color:#7C3AED;font-size:28px;}h2{color:#7C3AED;font-size:18px;margin-top:30px;border-bottom:1px solid rgba(124,58,237,0.2);padding-bottom:8px;}
+.stat{display:inline-block;margin:8px;padding:16px 24px;background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.15);border-radius:8px;}
+.stat-val{font-size:28px;font-weight:700;color:#7C3AED;}
+.stat-lbl{font-size:12px;color:#9CA3AF;margin-top:4px;}
+table{width:100%;border-collapse:collapse;margin-top:16px;}
+th{padding:10px;background:rgba(124,58,237,0.08);color:#9CA3AF;font-size:12px;text-align:left;border:1px solid rgba(124,58,237,0.1);}
+td{padding:10px;border:1px solid rgba(124,58,237,0.07);font-size:13px;}
+.HIGH{color:#EF4444;}.MEDIUM{color:#F59E0B;}.LOW{color:#22C55E;}
+footer{margin-top:40px;color:#6B7280;font-size:12px;border-top:1px solid rgba(124,58,237,0.1);padding-top:16px;}
+</style></head><body>
+<h1>💧 LeakSense AI — System Report</h1>
+<p style="color:#9CA3AF;">Generated: ${now} | User: ${u.name||'Demo User'} | Org: ${u.org||'—'}</p>
+<h2>Summary Statistics</h2>
+<div><div class="stat"><div class="stat-val">${sensorLog.length}</div><div class="stat-lbl">Total Readings</div></div>
+<div class="stat"><div class="stat-val">${alertHistory.length}</div><div class="stat-lbl">Total Alerts</div></div>
+<div class="stat"><div class="stat-val">${avgFlow}</div><div class="stat-lbl">Avg Flow (L/min)</div></div>
+<div class="stat"><div class="stat-val">${avgLoss}%</div><div class="stat-lbl">Avg Water Loss</div></div>
+<div class="stat"><div class="stat-val">${peakPSI}</div><div class="stat-lbl">Peak PSI</div></div></div>
+<h2>Alert History</h2>
+<table><tr><th>Time</th><th>Type</th><th>Severity</th><th>Flow In</th><th>Flow Out</th><th>Loss</th><th>PSI</th></tr>
+${alertHistory.length ? alertHistory.map(a=>`<tr><td>${a.time}</td><td>${a.type}</td><td class="${a.severity}">${a.severity}</td><td>${a.flowIn}</td><td>${a.flowOut}</td><td>${a.loss}%</td><td>${a.pressure}</td></tr>`).join('') : '<tr><td colspan="7" style="color:#6B7280;">No alerts recorded.</td></tr>'}
+</table>
+<footer>LeakSense AI — Smart Water Infrastructure Protection | leaksense.ai</footer>
+</body></html>`;
+    const blob = new Blob([html], {type:'text/html'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `leaksense-report-${Date.now()}.html`;
+    a.click();
+  }
+}
+
+// ═══════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  document.getElementById('topbar-clock').textContent = now.toLocaleTimeString('en', {hour12:false});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  initCharts();
+  renderAlertsTable();
+
+  // Auto-login redirect
+  const user = localStorage.getItem('leaksense_user');
+  if (user) {
+    showPage('page-dashboard');
+  }
+});
+// ═══════════════════════════════════════════════════════════════════
+// UPGRADED AI ANALYSIS ENGINE v2
+// Real-time + button-based analysis, Web Audio alerts, health scores
+// ═══════════════════════════════════════════════════════════════════
+
+let analysisResults = null;
+
+
+
+// ── Temperature tracker ──
+let tempHistory = [];
+const TEMP_WINDOW = 20;
+
+// ── Corrosion score tracker ──
+let corrosionScoreRaw = 0;
+let cycleCount = 0; // empty↔full transitions
+let lastFlowState = null; // 'high'|'low'
+let exposureReadings = 0;
+
+// ── Live AI state ──
+let liveAIState = 'NORMAL';
+
+// ── Entry: called when switching to analysis tab ──
+function initAnalysisSection() {
+  const hasData = sensorLog.length > 0;
+  document.getElementById('analysis-empty').style.display = 'none';
+  document.getElementById('analysis-summary').style.display = 'none';
+  // Start real-time display refresh if not already going
+  startLiveAILoop();
+  if (hasData && sensorLog.length > 0) {
+    // Populate from most recent reading immediately
+    updateLiveAIPanel(sensorLog[sensorLog.length - 1]);
+  }
+}
+
+// ── Real-time auto-refresh loop (1.5s) ──
+let liveAILoop = null;
+function startLiveAILoop() {
+  if (liveAILoop) return;
+  liveAILoop = setInterval(() => {
+    const activeSection = document.querySelector('.dash-section.active');
+    if (activeSection && activeSection.id === 'sec-analysis' && sensorLog.length > 0) {
+      updateLiveAIPanel(sensorLog[sensorLog.length - 1]);
+    }
+  }, 1500);
+}
+
+// ── Core live panel updater ──
+function updateLiveAIPanel(data) {
+  if (!data) return;
+
+  const flowIn = parseFloat(data.flowIn) || 0;
+  const flowOut = parseFloat(data.flowOut) || 0;
+  const pressure = parseFloat(data.pressure) || 0;
+  const loss = flowIn > 0 ? Math.max(0, Math.min(100, ((flowIn - flowOut) / flowIn) * 100)) : 0;
+  const lossLpm = Math.max(0, flowIn - flowOut);
+
+  // Temperature — use from data or simulate from recent avg
+  let temp = parseFloat(data.temp);
+  if (isNaN(temp)) temp = 25 + Math.sin(Date.now() / 30000) * 8; // fallback
+  temp = +temp.toFixed(1);
+
+  // Update temp history
+  tempHistory.push(temp);
+  if (tempHistory.length > TEMP_WINDOW) tempHistory.shift();
+  const tempMin = Math.min(...tempHistory);
+  const tempMax = Math.max(...tempHistory);
+  const tempVariation = +(tempMax - tempMin).toFixed(1);
+
+  // Exposure counter (time in water)
+  exposureReadings++;
+
+  // Flow cycle detection
+  const flowState = flowIn > 30 ? 'high' : 'low';
+  if (lastFlowState && lastFlowState !== flowState) cycleCount++;
+  lastFlowState = flowState;
+
+  // ── Corrosion Score (0–100) ──
+  let corrScore = 0;
+  corrScore += Math.min(40, tempVariation * 6);           // temp variation weight
+  corrScore += Math.min(25, cycleCount * 2);              // cycle count weight
+  corrScore += Math.min(20, (exposureReadings / 500) * 20); // exposure weight
+  if (loss >= 3 && loss <= 8) corrScore += 15;            // chronic low-loss range
+  corrScore = Math.min(100, Math.round(corrScore));
+
+  // ── Pipeline Health (100 → 0) ──
+  let health = 100;
+  health -= loss * 1.5;
+  health -= (corrScore / 100) * 20;
+  if (pressure < 30 || pressure > 85) health -= 10;
+  if (tempVariation > 10) health -= 10;
+  health = Math.max(0, Math.round(health));
+
+  // ── Determine AI State ──
+  let aiState = 'NORMAL';
+  if (loss >= 20 || (loss >= 10 && pressure < 35)) {
+    aiState = 'CRITICAL FAILURE';
+  } else if (loss >= 15) {
+    aiState = 'MAJOR LEAK';
+  } else if (loss >= 10) {
+    aiState = 'MAJOR LEAK';
+  } else if (loss >= 5) {
+    aiState = 'MINOR LEAK';
+  } else if (pressure < 30) {
+    aiState = 'BLOCKAGE';
+  } else if (corrScore >= 60 || (tempVariation > 12 && cycleCount > 10)) {
+    aiState = 'CORROSION RISK';
+  } else if (loss >= 2 || tempVariation > 8) {
+    aiState = 'NORMAL';
+  }
+  liveAIState = aiState;
+
+  // ── Pressure state ──
+  const pressureState = pressure < 30 ? 'LOW' : pressure > 80 ? 'HIGH' : 'NORMAL';
+
+  // ── Temp state ──
+  const tempState = temp < 20 ? 'LOW' : temp > 35 ? 'HIGH' : 'MED';
+
+  // ── Corrosion risk level ──
+  const corrLevel = corrScore < 30 ? 'LOW' : corrScore < 60 ? 'MED' : 'HIGH';
+
+  // ── Severity ──
+  const severity = ['NORMAL','BLOCKAGE'].includes(aiState) ? 'LOW'
+    : aiState === 'CORROSION RISK' || aiState === 'MINOR LEAK' ? 'MED'
+    : 'HIGH';
+
+  // ── Prediction text ──
+  let prediction = 'System nominal. All flow, pressure and temperature parameters within expected range.';
+  if (aiState === 'CRITICAL FAILURE') {
+    prediction = `⚠ CRITICAL FAILURE DETECTED. Extreme flow loss of ${loss.toFixed(1)}% with pressure at ${pressure.toFixed(1)} PSI. Possible burst or major pipe rupture. Emergency response required immediately.`;
+  } else if (aiState === 'MAJOR LEAK') {
+    prediction = `Major leak confirmed. Flow loss of ${loss.toFixed(1)}% (${lossLpm.toFixed(2)} L/min) detected. Pressure reading ${pressure.toFixed(1)} PSI. Pipeline section requires urgent inspection and isolation.`;
+  } else if (aiState === 'MINOR LEAK') {
+    prediction = `Minor leak detected. Flow loss ${loss.toFixed(1)}% is above the 5% warning threshold. Sustained loss could indicate a developing crack, joint failure, or corroded section. Monitor closely.`;
+  } else if (aiState === 'BLOCKAGE') {
+    prediction = `Pressure drop to ${pressure.toFixed(1)} PSI suggests a possible blockage or partial valve closure. Flow IN: ${flowIn.toFixed(1)} / OUT: ${flowOut.toFixed(1)} L/min — check for obstruction.`;
+  } else if (aiState === 'CORROSION RISK') {
+    prediction = `Corrosion risk elevated (score: ${corrScore}%). Indicators: temp variation ${tempVariation}°C, ${cycleCount} empty/full cycles, ${exposureReadings} continuous exposure readings. Pipeline lining may be degrading.`;
+  } else if (tempVariation > 8) {
+    prediction = `Temperature variation of ${tempVariation}°C detected. High thermal cycling may cause micro-fractures in pipe joints over time. Consider pipeline insulation.`;
+  } else if (loss > 1.5) {
+    prediction = `Minor flow imbalance of ${loss.toFixed(1)}%. Within acceptable range but trending upward. Corrosion score: ${corrScore}%. Continue monitoring.`;
+  }
+
+  // ── Action text ──
+  let action = 'No immediate action required. Schedule next routine inspection per maintenance calendar.';
+  if (severity === 'HIGH') {
+    action = `🔴 IMMEDIATE ACTION: Shut down affected pipeline segment. Deploy field technicians for physical inspection. Document loss volumes for billing reconciliation.`;
+  } else if (aiState === 'MINOR LEAK') {
+    action = `🟡 Schedule inspection within 24–48 hours. Mark GPS coordinates of sensors for field team. Reduce flow pressure by 10% to minimize further loss while investigating.`;
+  } else if (aiState === 'CORROSION RISK') {
+    action = `🟡 Schedule corrosion inhibitor treatment. Inspect pipe lining at access points. Consider reducing water-hammer events and stabilizing temperature with better insulation.`;
+  } else if (aiState === 'BLOCKAGE') {
+    action = `🟡 Check valve positions in pipeline segment. Perform flush cycle if debris suspected. Inspect strainers and filters at inline junctions.`;
+  } else if (tempVariation > 8) {
+    action = `Monitor temperature closely. If variation continues, apply pipeline lagging insulation. Inspect expansion joints for fatigue.`;
+  }
+
+  // ── Alert banner ──
+  const banner = document.getElementById('ai-alert-banner');
+  if (loss >= 5) {
+    banner.style.display = 'block';
+    banner.className = loss >= 10 ? 'ai-alert-banner' : 'ai-alert-banner warn-banner';
+    document.getElementById('ai-banner-title').textContent = loss >= 10
+      ? '⚠ MAJOR LEAK — CRITICAL ALERT' : '⚠ MINOR LEAK — WARNING THRESHOLD EXCEEDED';
+    document.getElementById('ai-banner-msg').textContent =
+      `Flow loss: ${loss.toFixed(1)}% (${lossLpm.toFixed(2)} L/min). ${action.replace(/[🔴🟡]/g,'').trim()}`;
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // ── Color helpers ──
+  const stateColor = {
+    'NORMAL':'var(--green)','MINOR LEAK':'var(--amber)','MAJOR LEAK':'#ff6600',
+    'BLOCKAGE':'var(--cyan)','CORROSION RISK':'#f59e0b','CRITICAL FAILURE':'var(--red)'
+  };
+  const sevColor = { LOW:'var(--green)', MED:'var(--amber)', HIGH:'var(--red)' };
+  const pressColor = { NORMAL:'var(--amber)', LOW:'var(--cyan)', HIGH:'var(--red)' };
+  const corrColor = { LOW:'var(--green)', MED:'var(--amber)', HIGH:'var(--red)' };
+
+  // ── DOM updates ──
+  const $ = id => document.getElementById(id);
+
+  $('live-ai-state').textContent = aiState;
+  $('live-ai-state').style.color = stateColor[aiState] || 'var(--neon)';
+  $('live-flow-in').textContent = flowIn.toFixed(1);
+  $('live-flow-out').textContent = flowOut.toFixed(1);
+  $('live-loss-val').textContent = loss.toFixed(1);
+  $('live-loss-val').style.color = loss >= 10 ? 'var(--red)' : loss >= 5 ? 'var(--amber)' : 'var(--green)';
+
+  $('mc-pressure-val').textContent = pressure.toFixed(1) + ' PSI';
+  $('mc-pressure-state').textContent = pressureState;
+  $('mc-pressure-val').style.color = pressColor[pressureState];
+  $('mc-pressure').className = 'ai-metric-card ' + (pressureState === 'NORMAL' ? 'ok-card' : pressureState === 'HIGH' ? 'bad-card' : 'warn-card');
+
+  $('mc-temp-val').textContent = temp.toFixed(1) + ' °C';
+  $('mc-temp-state').textContent = tempState;
+  $('mc-temp-val').style.color = tempState === 'LOW' ? 'var(--cyan)' : tempState === 'HIGH' ? 'var(--red)' : 'var(--neon)';
+  $('mc-temp').className = 'ai-metric-card ' + (tempState === 'MED' ? 'ok-card' : 'warn-card');
+
+  $('mc-corrosion-val').textContent = corrLevel;
+  $('mc-corrosion-val').style.color = corrColor[corrLevel];
+  $('mc-corrosion-score').textContent = 'Score: ' + corrScore + '%';
+  $('mc-corrosion').className = 'ai-metric-card ' + (corrLevel === 'LOW' ? 'ok-card' : corrLevel === 'MED' ? 'warn-card' : 'bad-card');
+
+  const sevEl = $('mc-severity-val');
+  sevEl.textContent = severity;
+  sevEl.style.color = sevColor[severity];
+  $('mc-severity').className = 'ai-metric-card ' + (severity === 'LOW' ? 'ok-card' : severity === 'MED' ? 'warn-card' : 'bad-card');
+
+  $('live-prediction').textContent = prediction;
+  $('live-action').textContent = action;
+
+  const sevBadge = $('live-sev-badge');
+  sevBadge.textContent = severity;
+  sevBadge.className = 'ai-sev-btn ai-sev-' + severity;
+
+  // Temperature impact
+  const tempMsg = $('temp-impact-msg');
+  const tempTxt = $('temp-impact-text');
+  if (tempVariation > 12) {
+    tempMsg.className = 'temp-impact-msg ti-high';
+    tempTxt.textContent = `⚠ High temperature variation detected (${tempVariation}°C range). Risk of pipe expansion and micro-fractures at joints. Inspect insulation immediately.`;
+  } else if (tempVariation > 6) {
+    tempMsg.className = 'temp-impact-msg';
+    tempTxt.textContent = `Temperature variation: ${tempVariation}°C — moderate thermal cycling. Monitor for expansion stress, especially at elbow joints.`;
+  } else {
+    tempMsg.className = 'temp-impact-msg ti-low';
+    tempTxt.textContent = `Temperature within normal range (variation: ${tempVariation}°C). No thermal expansion risk detected.`;
+  }
+
+  // Health scores
+  const healthColor = health >= 75 ? 'var(--green)' : health >= 45 ? 'var(--amber)' : 'var(--red)';
+  $('hs-health-val').textContent = health + '%';
+  $('hs-health-val').style.color = healthColor;
+  $('hs-health-bar').style.width = health + '%';
+  $('hs-health-bar').style.background = healthColor;
+  $('hs-health-sub').textContent = health >= 75 ? 'System optimal' : health >= 45 ? 'Degradation detected' : 'Critical — action needed';
+
+  const corrBarColor = corrScore < 30 ? 'var(--green)' : corrScore < 60 ? 'var(--amber)' : 'var(--red)';
+  $('hs-corrosion-val').textContent = corrScore + '%';
+  $('hs-corrosion-val').style.color = corrBarColor;
+  $('hs-corrosion-bar').style.width = corrScore + '%';
+  $('hs-corrosion-bar').style.background = corrBarColor;
+  $('hs-corrosion-sub').textContent = 'Risk level: ' + corrLevel;
+
+  const tvIdx = Math.min(100, Math.round(tempVariation * 6));
+  const tvColor = tvIdx < 30 ? 'var(--cyan)' : tvIdx < 60 ? 'var(--amber)' : 'var(--red)';
+  $('hs-temp-val').textContent = tempVariation.toFixed(1) + '°';
+  $('hs-temp-val').style.color = tvColor;
+  $('hs-temp-bar').style.width = tvIdx + '%';
+  $('hs-temp-bar').style.background = tvColor;
+  $('hs-temp-sub').textContent = 'Variation: ' + (tempVariation < 5 ? 'LOW' : tempVariation < 10 ? 'MED' : 'HIGH');
+
+  // AI Suggestions
+  const sugs = buildSuggestions(aiState, loss, corrScore, pressureState, tempVariation, health, cycleCount);
+  $('ai-sug-list').innerHTML = sugs.map(s =>
+    `<div class="ai-sug-item"><div class="ai-sug-dot sug-${s.level}"></div>${s.text}</div>`
+  ).join('');
+
+  // Timestamp
+  $('ai-last-update').textContent = new Date().toLocaleTimeString('en',{hour12:false});
+}
+
+function buildSuggestions(state, loss, corrScore, pressState, tempVar, health, cycles) {
+  const sugs = [];
+  if (state === 'NORMAL' && health >= 80) {
+    sugs.push({ level:'ok', text:'System operating optimally. No immediate intervention required.' });
+    sugs.push({ level:'ok', text:'Schedule next routine inspection per maintenance calendar.' });
+    if (corrScore > 15) sugs.push({ level:'warn', text: `Corrosion score at ${corrScore}% — consider inhibitor treatment at next service.` });
+    else sugs.push({ level:'ok', text:'Corrosion levels within acceptable limits. Continue monitoring.' });
+  }
+  if (loss >= 5 && loss < 10) {
+    sugs.push({ level:'warn', text:`Water loss at ${loss.toFixed(1)}% exceeds 5% threshold. Deploy inspection team within 48 hours.` });
+    sugs.push({ level:'warn', text:'Reduce supply pressure by 8–10% to limit ongoing loss while investigating.' });
+  }
+  if (loss >= 10) {
+    sugs.push({ level:'bad', text:`CRITICAL: ${loss.toFixed(1)}% flow loss requires immediate field response. Isolate suspect segment.` });
+    sugs.push({ level:'bad', text:'Activate emergency valve closure protocol. Contact operations manager now.' });
+  }
+  if (pressState === 'LOW') {
+    sugs.push({ level:'warn', text:'Low pressure detected — check for blockage at inline strainers or partially-closed valves.' });
+  }
+  if (pressState === 'HIGH') {
+    sugs.push({ level:'warn', text:'High pressure may accelerate micro-leak development. Check pressure-relief valves.' });
+  }
+  if (tempVar > 8) {
+    sugs.push({ level:'warn', text:`Temp variation ${tempVar.toFixed(1)}°C — inspect pipe lagging and expansion joints.` });
+  }
+  if (corrScore >= 60) {
+    sugs.push({ level:'bad', text:`Corrosion risk HIGH (${corrScore}%). Apply corrosion inhibitor treatment and inspect pipe lining urgently.` });
+  } else if (corrScore >= 30) {
+    sugs.push({ level:'warn', text:`Corrosion score ${corrScore}% — monitor closely. Add corrosion inhibitor to next treatment cycle.` });
+  }
+  if (cycles > 15) {
+    sugs.push({ level:'warn', text:`${cycles} empty/full cycles recorded — frequent pressure cycling degrades pipe joints. Review operational schedule.` });
+  }
+  if (health < 50) {
+    sugs.push({ level:'bad', text:`Pipeline health at ${health}%. Full structural assessment recommended before next operating cycle.` });
+  }
+  if (!sugs.length) {
+    sugs.push({ level:'ok', text: 'All parameters within normal range. System healthy.' });
+  }
+  return sugs.slice(0, 5);
+}
+
+// ── MAIN ANALYZE FUNCTION (button-triggered) ──
+async function runFullAnalysis() {
+  if (sensorLog.length === 0) {
+    alert('No sensor data available. Run the simulation or connect your ESP8266 first.');
+    return;
+  }
+
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ ANALYZING...';
+
+  // Show animation steps
+  const animRow = document.getElementById('anim-steps-row');
+  animRow.style.display = 'flex';
+  const stepIds = ['astep-flow','astep-pressure','astep-temp','astep-corrosion','astep-result'];
+  stepIds.forEach(id => { const el = document.getElementById(id); if(el) el.className = 'anim-step'; });
+
+  const statusBar = document.getElementById('analyze-status-bar');
+  const statusTxt = document.getElementById('analyze-status-txt');
+  statusBar.style.display = 'flex';
+
+  const stepLabels = [
+    { txt:'Step 1/5 — Analysing flow IN vs OUT and loss %…', stepIdx:0 },
+    { txt:'Step 2/5 — Evaluating pressure patterns…', stepIdx:1 },
+    { txt:'Step 3/5 — Processing temperature variation data…', stepIdx:2 },
+    { txt:'Step 4/5 — Computing corrosion signatures…', stepIdx:3 },
+    { txt:'Step 5/5 — Generating AI predictions and maintenance plan…', stepIdx:4 },
+    { txt:'Generating structured output table…', stepIdx:4 }
+  ];
+
+  for (const sl of stepLabels) {
+    statusTxt.textContent = sl.txt;
+    const stepEl = document.getElementById(stepIds[sl.stepIdx]);
+    if (stepEl) {
+      stepEl.className = 'anim-step step-active';
+      if (sl.stepIdx > 0) {
+        const prev = document.getElementById(stepIds[sl.stepIdx - 1]);
+        if (prev) prev.className = 'anim-step step-done';
+      }
+    }
+    await new Promise(r => setTimeout(r, 200));
+  }
+
+  stepIds.forEach(id => { const el = document.getElementById(id); if(el) el.className = 'anim-step step-done'; });
+
+  const pipelineLength = parseFloat(document.getElementById('pipeline-length').value) || 500;
+  const result = analysisEngine(sensorLog, pipelineLength);
+  analysisResults = result;
+
+  renderAnalysisSummary(result);
+  renderAnalysisTable(result.table);
+
+  statusBar.style.display = 'none';
+  btn.disabled = false;
+  btn.textContent = '⚡ ANALYZE';
+  document.getElementById('analysis-empty').style.display = 'none';
+  document.getElementById('analysis-summary').style.display = 'block';
+
+  setTimeout(() => { animRow.style.display = 'none'; }, 1500);
+}
+
+// ══════════════════════════════════════════
+// STEP 1: DATA CLEANING
+// ══════════════════════════════════════════
+function step1_clean(readings) {
+  return readings
+    .filter(r => {
+      // Remove entirely invalid rows
+      const fi = parseFloat(r.flowIn);
+      const fo = parseFloat(r.flowOut);
+      const p  = parseFloat(r.pressure);
+      return !isNaN(fi) && !isNaN(fo) && !isNaN(p) && fi >= 0 && fo >= 0 && p >= 0;
+    })
+    .map((r, i, arr) => {
+      const fi = Math.max(parseFloat(r.flowIn),  0.001);
+      const fo = Math.max(parseFloat(r.flowOut), 0);
+      const p  = Math.max(parseFloat(r.pressure), 0);
+
+      // Spike detection: compare against neighbours (±1 reading)
+      const prev = arr[i-1];
+      const fi_clean = (prev && Math.abs(fi - prev.flowIn) / Math.max(prev.flowIn,0.1) > 0.45)
+        ? prev.flowIn : fi;
+      const p_clean  = (prev && Math.abs(p  - prev.pressure) / Math.max(prev.pressure,0.1) > 0.45)
+        ? prev.pressure : p;
+      const fo_clean = Math.min(fo, fi_clean); // flow out can't exceed flow in physically
+
+      return {
+        timestamp: r.time || r.timestamp || new Date().toISOString(),
+        flowIn:  +fi_clean.toFixed(3),
+        flowOut: +fo_clean.toFixed(3),
+        pressure: +p_clean.toFixed(2),
+        temp: r.temp != null ? +parseFloat(r.temp).toFixed(1) : null,
+        _raw_fi: fi, _raw_fo: fo, _raw_p: p
+      };
+    });
+}
+
+// ══════════════════════════════════════════
+// STEP 2: FLOW LOSS CALCULATION
+// ══════════════════════════════════════════
+function step2_loss(cleaned) {
+  return cleaned.map(r => {
+    const loss_lpm    = +(r.flowIn - r.flowOut).toFixed(3);
+    const loss_percent = +(loss_lpm / Math.max(r.flowIn, 0.1) * 100).toFixed(2);
+    return { ...r, loss_lpm: Math.max(0, loss_lpm), loss_percent: Math.max(0, loss_percent) };
+  });
+}
+
+// ══════════════════════════════════════════
+// STEP 3: LEAK DETECTION
+// ══════════════════════════════════════════
+function step3_detect(withLoss) {
+  // Compute rolling pressure to detect sudden drops
+  return withLoss.map((r, i, arr) => {
+    let status = 'NORMAL';
+    let leak_detected = 'NO';
+
+    const lp = r.loss_percent;
+
+    // Sudden spike detection: compare with prior 3 readings avg
+    const priorSlice = arr.slice(Math.max(0, i-3), i);
+    const priorAvgLoss = priorSlice.length
+      ? priorSlice.reduce((a,b)=>a+b.loss_percent,0)/priorSlice.length
+      : lp;
+    const priorAvgPsi  = priorSlice.length
+      ? priorSlice.reduce((a,b)=>a+b.pressure,0)/priorSlice.length
+      : r.pressure;
+    const isSuddenSpike   = lp > priorAvgLoss * 2.5 && lp > 10;
+    const isPressureDrop  = (priorAvgPsi - r.pressure) / Math.max(priorAvgPsi,0.1) > 0.12;
+
+    if ((isSuddenSpike && isPressureDrop) || lp > 20) {
+      status = 'CRITICAL';
+      leak_detected = 'YES';
+    } else if (lp > 15) {
+      status = 'LEAK';
+      leak_detected = 'YES';
+    } else if (lp > 5) {
+      status = 'WARNING';
+      leak_detected = lp > 10 ? 'YES' : 'POSSIBLE';
+    } else {
+      status = 'NORMAL';
+      leak_detected = 'NO';
+    }
+
+    return { ...r, status, leak_detected };
+  });
+}
+
+// ══════════════════════════════════════════
+// STEP 4: LEAK LOCATION ESTIMATION
+// ══════════════════════════════════════════
+function step4_location(withDetection, pipelineLength) {
+  return withDetection.map(r => {
+    let leak_location = 'N/A';
+    if (r.leak_detected === 'YES' || r.leak_detected === 'POSSIBLE') {
+      // leak_distance = (loss_lpm / flow_in) * total_pipeline_length
+      const ratio = r.loss_lpm / Math.max(r.flowIn, 0.1);
+      const dist  = +(ratio * pipelineLength).toFixed(1);
+      // Clamp to pipeline bounds
+      const clamped = Math.min(dist, pipelineLength);
+      leak_location = `${clamped} m from inlet`;
+    }
+    return { ...r, leak_location };
+  });
+}
+
+// ══════════════════════════════════════════
+// STEP 5: CORROSION DETECTION
+// ══════════════════════════════════════════
+function step5_corrosion(withLocation) {
+  // Corrosion signature: loss between 3–8% AND pressure gradually declining
+  return withLocation.map((r, i, arr) => {
+    let corrosion = 'NO';
+    const lp = r.loss_percent;
+
+    if (lp >= 3 && lp <= 8) {
+      // Check if pressure has been consistently declining over last 5 readings
+      const window = arr.slice(Math.max(0, i-5), i+1);
+      if (window.length >= 3) {
+        let declines = 0;
+        for (let j=1; j<window.length; j++) {
+          if (window[j].pressure < window[j-1].pressure - 0.5) declines++;
+        }
+        const declineFraction = declines / (window.length - 1);
+        if (declineFraction >= 0.5) corrosion = 'YES';
+      }
+    }
+    return { ...r, corrosion };
+  });
+}
+
+// ══════════════════════════════════════════
+// STEP 6: MAINTENANCE PREDICTION
+// ══════════════════════════════════════════
+function step6_maintenance(withCorrosion) {
+  return withCorrosion.map(r => {
+    let maintenance_action = 'No action needed';
+    if (r.status === 'WARNING' || r.corrosion === 'YES') {
+      maintenance_action = r.corrosion === 'YES'
+        ? 'Monitor system — corrosion signature detected'
+        : 'Monitor system — minor imbalance';
+    }
+    if (r.status === 'LEAK') maintenance_action = 'Schedule maintenance — leak confirmed';
+    if (r.status === 'CRITICAL') maintenance_action = 'Immediate repair required — critical event';
+    return { ...r, maintenance_action };
+  });
+}
+
+// ══════════════════════════════════════════
+// MASTER ENGINE
+// ══════════════════════════════════════════
+function analysisEngine(readings, pipelineLength) {
+  // Run pipeline
+  const s1 = step1_clean(readings);
+  const s2 = step2_loss(s1);
+  const s3 = step3_detect(s2);
+  const s4 = step4_location(s3, pipelineLength);
+  const s5 = step5_corrosion(s4);
+  const s6 = step6_maintenance(s5);
+
+  // ── Build strict JSON output table ──
+  const table = s6.map(r => ({
+    timestamp:         r.timestamp,
+    flow_in:           r.flowIn,
+    flow_out:          r.flowOut,
+    pressure:          r.pressure,
+    temp:              r.temp != null ? r.temp : null,
+    loss_lpm:          r.loss_lpm,
+    loss_percent:      r.loss_percent,
+    status:            r.status,
+    leak_detected:     r.leak_detected,
+    leak_location:     r.leak_location,
+    corrosion:         r.corrosion,
+    maintenance_action: r.maintenance_action
+  }));
+
+  // ── Summary ──
+  const total = table.length;
+  const avg_loss = total ? +(table.reduce((a,b)=>a+b.loss_percent,0)/total).toFixed(2) : 0;
+
+  // Overall status = worst case
+  const statusRank = { NORMAL:0, WARNING:1, LEAK:2, CRITICAL:3 };
+  const overall_status = table.reduce((worst, r) =>
+    statusRank[r.status] > statusRank[worst] ? r.status : worst, 'NORMAL');
+
+  // Leak location: if leak exists, pick the worst reading's location
+  const leakRows = table.filter(r => r.leak_detected === 'YES');
+  const peak_leak = leakRows.sort((a,b)=>b.loss_percent-a.loss_percent)[0];
+  const overall_leak = leakRows.length > 0 ? 'YES' : table.some(r=>r.leak_detected==='POSSIBLE') ? 'POSSIBLE' : 'NO';
+  const overall_location = peak_leak ? peak_leak.leak_location : 'N/A';
+
+  // Corrosion overall
+  const overall_corrosion = table.some(r=>r.corrosion==='YES') ? 'YES' : 'NO';
+
+  // Pressure trend (linear slope)
+  const psi_arr = table.map(r=>r.pressure);
+  const n = psi_arr.length;
+  const xm = (n-1)/2;
+  const ym = psi_arr.reduce((a,b)=>a+b,0)/n;
+  let num=0,den=0;
+  psi_arr.forEach((y,x)=>{num+=(x-xm)*(y-ym);den+=(x-xm)**2;});
+  const psi_slope = den > 0 ? num/den : 0;
+  const pressure_trend = psi_slope < -0.05 ? 'DECLINING' : psi_slope > 0.05 ? 'RISING' : 'STABLE';
+
+  // Overall maintenance
+  const maintenanceRank = {
+    'No action needed':0,
+    'Monitor system — minor imbalance':1,
+    'Monitor system — corrosion signature detected':1,
+    'Schedule maintenance — leak confirmed':2,
+    'Immediate repair required — critical event':3
+  };
+  const overall_maintenance = table.reduce((worst, r) =>
+    (maintenanceRank[r.maintenance_action]||0) > (maintenanceRank[worst]||0) ? r.maintenance_action : worst,
+    'No action needed');
+
+  const summary = {
+    total_readings: total,
+    avg_loss_percent: avg_loss,
+    overall_status,
+    leak_detected: overall_leak,
+    leak_location: overall_location,
+    corrosion_detected: overall_corrosion,
+    pressure_trend,
+    maintenance_recommendation: overall_maintenance,
+    pipeline_length_m: pipelineLength
+  };
+
+  return { summary, table };
+}
+
+// ══════════════════════════════════════════
+// RENDER SUMMARY CARDS
+// ══════════════════════════════════════════
+function renderAnalysisSummary(result) {
+  const { summary, table } = result;
+  const s = summary;
+
+  // KPI cards
+  document.getElementById('an-total').textContent = s.total_readings;
+  document.getElementById('an-avgloss').textContent = s.avg_loss_percent + '%';
+
+  const statusEl = document.getElementById('an-status');
+  statusEl.textContent = s.overall_status;
+  const sc = {NORMAL:'var(--green)',WARNING:'var(--amber)',LEAK:'#ea7c00',CRITICAL:'var(--red)'};
+  statusEl.style.color = sc[s.overall_status] || 'var(--neon)';
+
+  const locEl = document.getElementById('an-location');
+  locEl.textContent = s.leak_location === 'N/A' ? 'None' : s.leak_location;
+  locEl.style.color = s.leak_location === 'N/A' ? 'var(--green)' : 'var(--red)';
+
+  document.getElementById('an-rowcount').textContent = table.length;
+
+  // Detail cards
+  const setDetail = (id, valId, val, cls) => {
+    document.getElementById(id).className = 'analyze-detail-card ' + cls;
+    document.getElementById(valId).textContent = val;
+    document.getElementById(valId).style.color = {ok:'var(--green)',warn:'var(--amber)',bad:'var(--red)'}[cls]||'var(--neon)';
+  };
+
+  const leakCls = s.leak_detected==='YES'?'bad':s.leak_detected==='POSSIBLE'?'warn':'ok';
+  setDetail('adc-leak','adc-leak-val', s.leak_detected, leakCls);
+
+  const corrCls = s.corrosion_detected==='YES'?'warn':'ok';
+  setDetail('adc-corrosion','adc-corrosion-val', s.corrosion_detected, corrCls);
+
+  const mRank = { 'No action needed':0,'Monitor':1,'Schedule':2,'Immediate':3 };
+  const mCls = s.maintenance_recommendation.startsWith('Immediate')?'bad':
+               s.maintenance_recommendation.startsWith('Schedule')?'warn':
+               s.maintenance_recommendation.startsWith('Monitor')?'warn':'ok';
+  setDetail('adc-maintenance','adc-maintenance-val', s.maintenance_recommendation, mCls);
+
+  const pCls = s.pressure_trend==='DECLINING'?'warn':s.pressure_trend==='RISING'?'warn':'ok';
+  setDetail('adc-pressure','adc-pressure-val', s.pressure_trend, pCls);
+}
+
+// ══════════════════════════════════════════
+// RENDER FULL ANALYSIS TABLE
+// ══════════════════════════════════════════
+function renderAnalysisTable(table) {
+  const tbody = document.getElementById('analysis-tbody');
+  if (!table.length) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--dim);padding:40px;">No valid data rows after cleaning.</td></tr>';
+    return;
+  }
+
+  const statusColors = { NORMAL:'var(--green)', WARNING:'var(--amber)', LEAK:'#ea7c00', CRITICAL:'var(--red)' };
+
+  tbody.innerHTML = table.map((r, i) => {
+    const sc = statusColors[r.status] || 'var(--text2)';
+    const lc = r.leak_detected==='YES'?'var(--red)':r.leak_detected==='POSSIBLE'?'var(--amber)':'var(--green)';
+    const cc = r.corrosion==='YES'?'var(--amber)':'var(--text2)';
+    const tc = (r.temp||0) > 35 ? 'var(--red)' : (r.temp||0) < 18 ? 'var(--cyan)' : 'var(--neon)';
+
+    // Format timestamp
+    let ts = r.timestamp;
+    try { ts = new Date(r.timestamp).toLocaleString('en',{hour12:false,month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}); } catch(e){}
+
+    return `<tr>
+      <td class="an-row-num">${i+1}</td>
+      <td>${ts}</td>
+      <td style="color:var(--neon);">${r.flow_in}</td>
+      <td style="color:var(--green);">${r.flow_out}</td>
+      <td style="color:var(--amber);">${r.pressure}</td>
+      <td style="color:${tc};">${r.temp != null ? r.temp + '°C' : '--'}</td>
+      <td>${r.loss_lpm}</td>
+      <td class="st-${r.status}">${r.loss_percent}%</td>
+      <td style="color:${sc};font-weight:600;">${r.status}</td>
+      <td style="color:${lc};font-weight:600;">${r.leak_detected}</td>
+      <td style="color:${r.leak_location!=='N/A'?'var(--red)':'var(--dim)'};">${r.leak_location}</td>
+      <td style="color:${cc};">${r.corrosion}</td>
+      <td style="color:var(--text2);max-width:200px;white-space:normal;font-size:10px;">${r.maintenance_action}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// EXPORT: CSV (Excel-ready)
+// ══════════════════════════════════════════
+function exportAnalysisCSV() {
+  if (!analysisResults) { alert('Run analysis first.'); return; }
+  const { summary, table } = analysisResults;
+
+  const headers = ['#','Timestamp','Flow In (L/min)','Flow Out (L/min)','Pressure (PSI)',
+    'Loss (L/min)','Loss (%)','Status','Leak Detected','Leak Location','Corrosion','Maintenance Action'];
+
+  const summaryRows = [
+    ['LEAKSENSE AI — PIPELINE ANALYSIS REPORT'],
+    [`Generated: ${new Date().toLocaleString()}`],
+    [`Pipeline Length: ${summary.pipeline_length_m} m`],
+    [],
+    ['=== SUMMARY ==='],
+    ['Total Readings', summary.total_readings],
+    ['Avg Loss %', summary.avg_loss_percent + '%'],
+    ['Overall Status', summary.overall_status],
+    ['Leak Detected', summary.leak_detected],
+    ['Leak Location', summary.leak_location],
+    ['Corrosion Detected', summary.corrosion_detected],
+    ['Pressure Trend', summary.pressure_trend],
+    ['Maintenance Recommendation', summary.maintenance_recommendation],
+    [],
+    ['=== FULL DATA ==='],
+    headers
+  ];
+
+  const dataRows = table.map((r,i) => [
+    i+1, r.timestamp, r.flow_in, r.flow_out, r.pressure,
+    r.loss_lpm, r.loss_percent, r.status, r.leak_detected,
+    r.leak_location, r.corrosion, r.maintenance_action
+  ]);
+
+  const allRows = [...summaryRows, ...dataRows];
+  const csv = allRows.map(row => row.map(cell => {
+    const s = String(cell ?? '');
+    return s.includes(',') || s.includes('"') || s.includes('\n')
+      ? `"${s.replace(/"/g,'""')}"` : s;
+  }).join(',')).join('\r\n');
+
+  const blob = new Blob(['\uFEFF' + csv, {type:'text/csv;charset=utf-8;'}]);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], {type:'text/csv'}));
+  a.download = `leaksense-analysis-${Date.now()}.csv`;
+  a.click();
+}
+
+// ══════════════════════════════════════════
+// EXPORT: JSON
+// ══════════════════════════════════════════
+function exportAnalysisJSON() {
+  if (!analysisResults) { alert('Run analysis first.'); return; }
+  const output = {
+    meta: {
+      generated: new Date().toISOString(),
+      tool: 'LeakSense AI Analysis Engine',
+      pipeline_length_m: analysisResults.summary.pipeline_length_m
+    },
+    summary: analysisResults.summary,
+    table: analysisResults.table
+  };
+  const blob = new Blob([JSON.stringify(output, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `leaksense-analysis-${Date.now()}.json`;
+  a.click();
+}
+
+// ══════════════════════════════════════════
+// EXPORT: HTML Report
+// ══════════════════════════════════════════
+function exportAnalysisHTML() {
+  if (!analysisResults) { alert('Run analysis first.'); return; }
+  const { summary: s, table } = analysisResults;
+  const now = new Date().toLocaleString();
+
+  const statusColor = { NORMAL:'#22C55E', WARNING:'#F59E0B', LEAK:'#ea7c00', CRITICAL:'#EF4444' };
+  const sc = statusColor[s.overall_status] || '#7C3AED';
+
+  const tableRows = table.map((r,i) => {
+    const sColor = statusColor[r.status] || '#E5E7EB';
+    const lColor = r.leak_detected==='YES'?'#EF4444':r.leak_detected==='POSSIBLE'?'#F59E0B':'#22C55E';
+    const cColor = r.corrosion==='YES'?'#F59E0B':'#9CA3AF';
+    return `<tr>
+      <td style="color:#6B7280">${i+1}</td>
+      <td style="font-size:11px">${r.timestamp}</td>
+      <td style="color:#7C3AED">${r.flow_in}</td>
+      <td style="color:#22C55E">${r.flow_out}</td>
+      <td style="color:#F59E0B">${r.pressure}</td>
+      <td>${r.loss_lpm}</td>
+      <td style="color:${sColor}">${r.loss_percent}%</td>
+      <td style="color:${sColor};font-weight:700">${r.status}</td>
+      <td style="color:${lColor};font-weight:700">${r.leak_detected}</td>
+      <td style="color:${r.leak_location!=='N/A'?'#EF4444':'#6B7280'}">${r.leak_location}</td>
+      <td style="color:${cColor}">${r.corrosion}</td>
+      <td style="font-size:11px;color:#9CA3AF">${r.maintenance_action}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<title>LeakSense AI — Pipeline Analysis Report</title>
+<style>
+body{font-family:'Segoe UI',sans-serif;background:#0B0F1A;color:#E5E7EB;margin:0;padding:32px;}
+h1{color:#7C3AED;font-size:26px;margin-bottom:4px;}
+.subtitle{color:#9CA3AF;font-size:14px;margin-bottom:28px;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:28px;}
+.sum-card{padding:16px 18px;background:rgba(15,10,35,0.9);border:1px solid rgba(124,58,237,0.15);border-radius:8px;}
+.sum-label{font-size:11px;color:#6B7280;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
+.sum-val{font-size:20px;font-weight:700;color:#7C3AED;}
+.status-badge{display:inline-block;padding:4px 12px;border-radius:5px;font-weight:700;font-size:12px;margin-top:4px;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{background:rgba(15,10,35,0.95);padding:10px 10px;color:#6B7280;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid rgba(124,58,237,0.15);position:sticky;top:0;}
+td{padding:8px 10px;border-top:1px solid rgba(124,58,237,0.04);}
+tr:hover td{background:rgba(124,58,237,0.03);}
+.tbl-wrap{overflow-x:auto;border:1px solid rgba(124,58,237,0.1);border-radius:8px;max-height:600px;overflow-y:auto;}
+footer{margin-top:28px;color:#6B7280;font-size:11px;border-top:1px solid rgba(124,58,237,0.08);padding-top:16px;}
+</style>
+</head><body>
+<h1>💧 LeakSense AI — Pipeline Analysis Report</h1>
+<div class="subtitle">Generated: ${now} | Pipeline: ${s.pipeline_length_m}m | Engine: 6-Step AI Analysis</div>
+<div class="summary-grid">
+  <div class="sum-card"><div class="sum-label">Total Readings</div><div class="sum-val">${s.total_readings}</div></div>
+  <div class="sum-card"><div class="sum-label">Avg Water Loss</div><div class="sum-val">${s.avg_loss_percent}%</div></div>
+  <div class="sum-card"><div class="sum-label">Overall Status</div><div class="sum-val" style="color:${sc}">${s.overall_status}</div></div>
+  <div class="sum-card"><div class="sum-label">Leak Detected</div><div class="sum-val" style="color:${s.leak_detected==='YES'?'#EF4444':s.leak_detected==='POSSIBLE'?'#F59E0B':'#22C55E'}">${s.leak_detected}</div></div>
+  <div class="sum-card"><div class="sum-label">Leak Location</div><div class="sum-val" style="font-size:14px;color:${s.leak_location!=='N/A'?'#EF4444':'#22C55E'}">${s.leak_location}</div></div>
+  <div class="sum-card"><div class="sum-label">Corrosion</div><div class="sum-val" style="color:${s.corrosion_detected==='YES'?'#F59E0B':'#22C55E'}">${s.corrosion_detected}</div></div>
+  <div class="sum-card"><div class="sum-label">Pressure Trend</div><div class="sum-val" style="font-size:16px">${s.pressure_trend}</div></div>
+  <div class="sum-card" style="grid-column:span 2"><div class="sum-label">Maintenance Recommendation</div><div class="sum-val" style="font-size:13px">${s.maintenance_recommendation}</div></div>
+</div>
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>#</th><th>Timestamp</th><th>Flow In</th><th>Flow Out</th><th>Pressure</th><th>Loss</th><th>Loss %</th><th>Status</th><th>Leak</th><th>Location</th><th>Corrosion</th><th>Maintenance</th></tr></thead>
+<tbody>${tableRows}</tbody>
+</table>
+</div>
+<footer>LeakSense AI — Pipeline Health Analysis System | Smart Water Infrastructure Protection</footer>
+</body></html>`;
+
+  const blob = new Blob([html], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `leaksense-report-${Date.now()}.html`;
+  a.click();
+}
+</script>
+</body></html>
